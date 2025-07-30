@@ -4,7 +4,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.core.database.database import get_db
-from app.models.member import Member, SocialProfile
+from app.models.member import Member, SocialProfile, Activity
 from app.models.schemas import (
     MemberCreate, MemberUpdate, Member as MemberSchema,
     MemberWithProfiles, SocialProfileCreate, SocialProfileUpdate,
@@ -86,17 +86,34 @@ def update_member(
 
 @router.delete("/{member_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_member(member_id: int, db: Session = Depends(get_db)):
-    """Delete a team member (soft delete by setting is_active=False)."""
-    member = db.query(Member).filter(Member.id == member_id).first()
-    if not member:
+    """Delete a team member completely from database."""
+    try:
+        member = db.query(Member).filter(Member.id == member_id).first()
+        if not member:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Member not found"
+            )
+        
+        # Delete related social profiles first (cascade delete)
+        db.query(SocialProfile).filter(SocialProfile.member_id == member_id).delete()
+        
+        # Delete related activities
+        db.query(Activity).filter(Activity.member_id == member_id).delete()
+        
+        # Delete the member
+        db.delete(member)
+        db.commit()
+        
+        return None
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Member not found"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete member: {str(e)}"
         )
-    
-    member.is_active = False
-    db.commit()
-    return None
 
 
 # Social Profile endpoints

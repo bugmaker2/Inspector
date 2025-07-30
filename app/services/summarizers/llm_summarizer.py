@@ -5,6 +5,7 @@ from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from openai import OpenAI
+import httpx
 from app.models.member import Activity, Summary, Member
 from app.core.config.settings import settings
 
@@ -16,7 +17,10 @@ class LLMSummarizer:
         self.db = db
         self.client = None
         if settings.openai_api_key:
-            self.client = OpenAI(api_key=settings.openai_api_key)
+            self.client = OpenAI(
+                api_key=settings.openai_api_key,
+                base_url=settings.openai_base_url
+            )
     
     def can_summarize(self) -> bool:
         """Check if LLM summarization is available."""
@@ -197,23 +201,45 @@ class LLMSummarizer:
         prompt = self._create_summary_prompt(activity_data, summary_type, start_date, end_date)
         
         try:
-            response = self.client.chat.completions.create(
-                model=settings.openai_model,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You are a professional social media activity analyst. Create concise, informative summaries of team member activities across various platforms."
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ],
-                max_tokens=2000,
-                temperature=0.7
-            )
-            
-            return response.choices[0].message.content
+            if "dashscope.aliyuncs.com" in settings.openai_base_url:
+                # 阿里云通义千问
+                headers = {
+                    "Authorization": f"Bearer {settings.openai_api_key}",
+                    "Content-Type": "application/json"
+                }
+                data = {
+                    "model": settings.openai_model,
+                    "messages": [
+                        {"role": "system", "content": "You are a professional social media activity analyst. Create concise, informative summaries of team member activities across various platforms."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    "max_tokens": 2000,
+                    "temperature": 0.7
+                }
+                async with httpx.AsyncClient() as client:
+                    response = await client.post(
+                        settings.openai_base_url,
+                        headers=headers,
+                        json=data,
+                        timeout=30.0
+                    )
+                    if response.status_code == 200:
+                        result = response.json()
+                        return result["choices"][0]["message"]["content"]
+                    else:
+                        print(f"Aliyun API error: {response.status_code} {response.text}")
+                        return None
+            else:
+                response = self.client.chat.completions.create(
+                    model=settings.openai_model,
+                    messages=[
+                        {"role": "system", "content": "You are a professional social media activity analyst. Create concise, informative summaries of team member activities across various platforms."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=2000,
+                    temperature=0.7
+                )
+                return response.choices[0].message.content
             
         except Exception as e:
             print(f"Error generating LLM summary: {e}")
@@ -243,7 +269,17 @@ Please provide a comprehensive summary that includes:
 4. Notable achievements or milestones
 5. Recommendations or observations
 
-Format the summary in a professional, easy-to-read format with clear sections and bullet points where appropriate.
+**IMPORTANT**: Format the summary in Markdown format with proper headings, bullet points, and formatting. Use:
+- `#` for main headings
+- `##` for subheadings
+- `###` for section headings
+- `-` for bullet points
+- `**bold**` for emphasis
+- `*italic*` for secondary emphasis
+- Code blocks with ``` for any technical content
+- Tables with | for structured data
+
+Make it professional, well-structured, and easy to read with clear sections and proper Markdown formatting.
 """
         
         return prompt
@@ -262,5 +298,206 @@ Format the summary in a professional, easy-to-read format with clear sections an
                 if activity['content']:
                     formatted += f"\n  Content: {activity['content'][:200]}..."
                 formatted += "\n"
+        
+        return formatted
+
+    async def generate_member_summary(
+        self, 
+        member_id: int,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        days: int = 7
+    ) -> Optional[Summary]:
+        """Generate summary for a specific member's activities."""
+        if not self.can_summarize():
+            return None
+        
+        # Set date range
+        if end_date is None:
+            end_date = datetime.utcnow()
+        if start_date is None:
+            start_date = end_date - timedelta(days=days)
+        
+        # Get member info
+        member = self.db.query(Member).filter(Member.id == member_id).first()
+        if not member:
+            return None
+        
+        # Debug: Print date range
+        print(f"Searching for activities between {start_date} and {end_date}")
+        
+        # Get activities for this member in the date range
+        # First get all activities for the member, then filter by date
+        all_activities = self.db.query(Activity).filter(
+            Activity.member_id == member_id
+        ).order_by(Activity.published_at.desc()).all()
+        
+        # Filter activities by date range
+        activities = []
+        for activity in all_activities:
+            if activity.published_at and start_date <= activity.published_at <= end_date:
+                activities.append(activity)
+        
+        print(f"Found {len(activities)} activities for member {member_id}")
+        
+        if not activities:
+            return None
+        
+        # Generate summary content
+        summary_content = await self._generate_member_summary_content(
+            member, activities, start_date, end_date
+        )
+        
+        if not summary_content:
+            return None
+        
+        # Create summary record
+        summary = Summary(
+            title=f"{member.name} - Activity Summary ({start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')})",
+            content=summary_content,
+            summary_type="member",
+            start_date=start_date,
+            end_date=end_date,
+            member_count=1,
+            activity_count=len(activities)
+        )
+        
+        self.db.add(summary)
+        self.db.commit()
+        self.db.refresh(summary)
+        
+        return summary
+
+    async def _generate_member_summary_content(
+        self,
+        member: Member,
+        activities: List[Activity],
+        start_date: datetime,
+        end_date: datetime
+    ) -> Optional[str]:
+        """Generate summary content for a specific member."""
+        if not activities:
+            return None
+        
+        # Prepare activity data for LLM
+        activity_data = []
+        for activity in activities:
+            activity_data.append({
+                "platform": activity.platform,
+                "type": activity.activity_type,
+                "title": activity.title,
+                "content": activity.content,
+                "url": activity.url,
+                "published_at": activity.published_at.isoformat() if activity.published_at else None,
+                "created_at": activity.created_at.isoformat()
+            })
+        
+        # Create prompt for LLM
+        prompt = self._create_member_summary_prompt(member, activity_data, start_date, end_date)
+        
+        try:
+            if "dashscope.aliyuncs.com" in settings.openai_base_url:
+                headers = {
+                    "Authorization": f"Bearer {settings.openai_api_key}",
+                    "Content-Type": "application/json"
+                }
+                data = {
+                    "model": settings.openai_model,
+                    "messages": [
+                        {"role": "system", "content": "You are a professional social media activity analyst. Create concise, informative summaries of individual team member activities."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    "max_tokens": 1500,
+                    "temperature": 0.7
+                }
+                async with httpx.AsyncClient() as client:
+                    response = await client.post(
+                        settings.openai_base_url,
+                        headers=headers,
+                        json=data,
+                        timeout=30.0
+                    )
+                    if response.status_code == 200:
+                        result = response.json()
+                        return result["choices"][0]["message"]["content"]
+                    else:
+                        print(f"Aliyun API error: {response.status_code} {response.text}")
+                        return None
+            else:
+                response = self.client.chat.completions.create(
+                    model=settings.openai_model,
+                    messages=[
+                        {"role": "system", "content": "You are a professional social media activity analyst. Create concise, informative summaries of individual team member activities."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=1500,
+                    temperature=0.7
+                )
+                return response.choices[0].message.content
+            
+        except Exception as e:
+            print(f"Error generating member LLM summary: {e}")
+            return None
+
+    def _create_member_summary_prompt(
+        self,
+        member: Member,
+        activity_data: List[Dict],
+        start_date: datetime,
+        end_date: datetime
+    ) -> str:
+        """Create prompt for member-specific LLM summarization."""
+        
+        date_range = f"{start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}"
+        
+        prompt = f"""
+Please create a summary of {member.name}'s social media activities for the period {date_range}.
+
+Member Information:
+- Name: {member.name}
+- Position: {member.position or 'Not specified'}
+- Department: {member.department or 'Not specified'}
+
+Activity Data:
+{self._format_member_activity_data(activity_data)}
+
+Please provide a comprehensive summary that includes:
+1. Overall activity overview and engagement level
+2. Key highlights and notable activities
+3. Platform-specific insights (LinkedIn, GitHub, etc.)
+4. Professional development and achievements
+5. Trends and patterns in their online presence
+6. Recommendations or observations
+
+**IMPORTANT**: Format the summary in Markdown format with proper headings, bullet points, and formatting. Use:
+- `#` for main headings
+- `##` for subheadings
+- `###` for section headings
+- `-` for bullet points
+- `**bold**` for emphasis
+- `*italic*` for secondary emphasis
+- Code blocks with ``` for any technical content
+- Tables with | for structured data
+
+Make it professional, well-structured, and easy to read with clear sections and proper Markdown formatting. Keep it concise but informative, focusing on the most important aspects of their activities.
+"""
+        
+        return prompt
+
+    def _format_member_activity_data(self, activity_data: List[Dict]) -> str:
+        """Format activity data for member-specific LLM prompt."""
+        formatted = ""
+        
+        for activity in activity_data:
+            formatted += f"\n{activity['platform'].upper()} - {activity['type']}"
+            if activity['title']:
+                formatted += f"\nTitle: {activity['title']}"
+            if activity['content']:
+                formatted += f"\nContent: {activity['content'][:300]}..."
+            if activity['published_at']:
+                formatted += f"\nPublished: {activity['published_at']}"
+            if activity['url']:
+                formatted += f"\nURL: {activity['url']}"
+            formatted += "\n" + "-" * 50 + "\n"
         
         return formatted 

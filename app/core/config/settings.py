@@ -35,6 +35,9 @@ class Settings(BaseSettings):
     openai_model: str = Field(
         default="gpt-3.5-turbo", description="OpenAI model to use"
     )
+    openai_base_url: str = Field(
+        default="https://api.openai.com/v1", description="OpenAI API base URL"
+    )
     
     # Monitoring
     monitoring_interval_minutes: int = Field(

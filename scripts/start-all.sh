@@ -20,11 +20,11 @@ fi
 # 检查环境配置
 if [ ! -f ".env" ]; then
     echo "⚠️  Warning: .env file not found. Creating from example..."
-    if [ -f "env.example" ]; then
-        cp env.example .env
-        echo "✅ Created .env from env.example"
+    if [ -f "config/env.example" ]; then
+        cp config/env.example .env
+        echo "✅ Created .env from config/env.example"
     else
-        echo "❌ Error: env.example not found. Please create .env file manually."
+        echo "❌ Error: config/env.example not found. Please create .env file manually."
         exit 1
     fi
 fi

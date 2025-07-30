@@ -228,4 +228,67 @@ def get_summary(summary_id: int, db: Session = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Summary not found"
         )
-    return summary 
+    return summary
+
+
+@router.post("/generate-member-summary/{member_id}", response_model=SummarySchema, status_code=status.HTTP_201_CREATED)
+async def generate_member_summary(
+    member_id: int,
+    days: int = 7,
+    start_date: str = None,
+    end_date: str = None,
+    db: Session = Depends(get_db)
+):
+    """Generate summary for a specific member's activities."""
+    try:
+        summarizer = LLMSummarizer(db)
+        
+        if not summarizer.can_summarize():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="LLM summarization not available. Please configure OpenAI API key."
+            )
+        
+        # Parse dates if provided
+        parsed_start_date = None
+        parsed_end_date = None
+        
+        if start_date:
+            try:
+                parsed_start_date = datetime.strptime(start_date, "%Y-%m-%d")
+            except ValueError:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid start_date format. Use YYYY-MM-DD"
+                )
+        
+        if end_date:
+            try:
+                parsed_end_date = datetime.strptime(end_date, "%Y-%m-%d")
+            except ValueError:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid end_date format. Use YYYY-MM-DD"
+                )
+        
+        summary = await summarizer.generate_member_summary(
+            member_id=member_id,
+            start_date=parsed_start_date,
+            end_date=parsed_end_date,
+            days=days
+        )
+        
+        if not summary:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No activities found for the specified member and date range"
+            )
+        
+        return summary
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Member summary generation failed: {str(e)}"
+        ) 

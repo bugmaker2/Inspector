@@ -10,3 +10,5 @@ wheels/
 .venv
 .env
 frontend/node_modules/
+.DS_Store
+.inspector_cursor.db

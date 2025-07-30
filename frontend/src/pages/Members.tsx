@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, EyeIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { membersApi, socialProfilesApi } from '../services/api';
-import { Member, MemberCreate, SocialProfileCreate } from '../types';
+import { Member, MemberCreate, SocialProfileCreate, SocialProfile } from '../types';
 import toast from 'react-hot-toast';
 
 const Members: React.FC = () => {
@@ -9,7 +9,9 @@ const Members: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [memberProfiles, setMemberProfiles] = useState<SocialProfile[]>([]);
   const [formData, setFormData] = useState<MemberCreate>({
     name: '',
     email: '',
@@ -28,7 +30,7 @@ const Members: React.FC = () => {
 
   const loadMembers = async () => {
     try {
-      const data = await membersApi.getAll();
+      const data = await membersApi.getAll({ active_only: false });
       setMembers(data);
     } catch (error) {
       toast.error('加载成员列表失败');
@@ -36,6 +38,22 @@ const Members: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadMemberProfiles = async (memberId: number) => {
+    try {
+      const profiles = await socialProfilesApi.getByMemberId(memberId);
+      setMemberProfiles(profiles);
+    } catch (error) {
+      toast.error('加载社交配置失败');
+      console.error('Failed to load member profiles:', error);
+    }
+  };
+
+  const handleViewDetails = async (member: Member) => {
+    setSelectedMember(member);
+    await loadMemberProfiles(member.id);
+    setShowDetailsModal(true);
   };
 
   const handleCreateMember = async (e: React.FormEvent) => {
@@ -62,6 +80,10 @@ const Members: React.FC = () => {
       setShowProfileModal(false);
       setProfileFormData({ platform: '', profile_url: '', username: '' });
       loadMembers();
+      // 如果详情模态框是打开的，重新加载配置
+      if (showDetailsModal) {
+        await loadMemberProfiles(selectedMember.id);
+      }
     } catch (error) {
       toast.error('添加社交配置失败');
       console.error('Failed to create profile:', error);
@@ -78,6 +100,46 @@ const Members: React.FC = () => {
     } catch (error) {
       toast.error('删除成员失败');
       console.error('Failed to delete member:', error);
+    }
+  };
+
+  const handleDeleteProfile = async (memberId: number, profileId: number) => {
+    if (!window.confirm('确定要删除这个社交配置吗？')) return;
+    
+    try {
+      await socialProfilesApi.delete(memberId, profileId);
+      toast.success('社交配置删除成功');
+      await loadMemberProfiles(memberId);
+      loadMembers();
+    } catch (error) {
+      toast.error('删除社交配置失败');
+      console.error('Failed to delete profile:', error);
+    }
+  };
+
+  const getPlatformIcon = (platform: string) => {
+    switch (platform.toLowerCase()) {
+      case 'github':
+        return '🐙';
+      case 'linkedin':
+        return '💼';
+      case 'twitter':
+        return '🐦';
+      default:
+        return '🌐';
+    }
+  };
+
+  const getPlatformColor = (platform: string) => {
+    switch (platform.toLowerCase()) {
+      case 'github':
+        return 'bg-gray-800 text-white';
+      case 'linkedin':
+        return 'bg-blue-600 text-white';
+      case 'twitter':
+        return 'bg-blue-400 text-white';
+      default:
+        return 'bg-gray-500 text-white';
     }
   };
 
@@ -138,34 +200,45 @@ const Members: React.FC = () => {
                   </div>
                   <div className="flex items-center space-x-2">
                     <button
+                      onClick={() => handleViewDetails(member)}
+                      className="text-primary-600 hover:text-primary-900 flex items-center"
+                      title="查看详情"
+                    >
+                      <EyeIcon className="h-4 w-4 mr-1" />
+                      查看配置
+                    </button>
+                    <button
                       onClick={() => {
                         setSelectedMember(member);
                         setShowProfileModal(true);
                       }}
-                      className="text-primary-600 hover:text-primary-900"
+                      className="text-green-600 hover:text-green-900 flex items-center"
+                      title="添加配置"
                     >
-                      添加社交配置
+                      <PlusIcon className="h-4 w-4 mr-1" />
+                      添加配置
                     </button>
                     <button
                       onClick={() => handleDeleteMember(member.id)}
                       className="text-red-600 hover:text-red-900"
+                      title="删除成员"
                     >
                       <TrashIcon className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
                 
-                {/* Social Profiles */}
+                {/* Social Profiles Summary */}
                 {member.social_profiles && member.social_profiles.length > 0 && (
                   <div className="mt-4">
-                    <h4 className="text-sm font-medium text-gray-900 mb-2">社交配置</h4>
+                    <h4 className="text-sm font-medium text-gray-900 mb-2">社交配置 ({member.social_profiles.length})</h4>
                     <div className="flex flex-wrap gap-2">
                       {member.social_profiles.map((profile) => (
                         <span
                           key={profile.id}
-                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPlatformColor(profile.platform)}`}
                         >
-                          {profile.platform}
+                          {getPlatformIcon(profile.platform)} {profile.platform}
                         </span>
                       ))}
                     </div>
@@ -176,6 +249,145 @@ const Members: React.FC = () => {
           ))}
         </ul>
       </div>
+
+      {/* Member Details Modal */}
+      {showDetailsModal && selectedMember && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto p-5 border w-4/5 max-w-4xl shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-medium text-gray-900">
+                  {selectedMember.name} - 详细配置
+                </h3>
+                <button
+                  onClick={() => setShowDetailsModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Member Information */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <h4 className="text-lg font-medium text-gray-900 mb-3">成员信息</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">姓名</label>
+                    <p className="mt-1 text-sm text-gray-900">{selectedMember.name}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">邮箱</label>
+                    <p className="mt-1 text-sm text-gray-900">{selectedMember.email}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">职位</label>
+                    <p className="mt-1 text-sm text-gray-900">{selectedMember.position || '未设置'}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">部门</label>
+                    <p className="mt-1 text-sm text-gray-900">{selectedMember.department || '未设置'}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">状态</label>
+                    <span className={`mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      selectedMember.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {selectedMember.is_active ? '活跃' : '非活跃'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Social Profiles */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-lg font-medium text-gray-900">社交配置</h4>
+                  <button
+                    onClick={() => {
+                      setShowDetailsModal(false);
+                      setShowProfileModal(true);
+                    }}
+                    className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-primary-600 bg-primary-50 hover:bg-primary-100"
+                  >
+                    <PlusIcon className="h-4 w-4 mr-1" />
+                    添加配置
+                  </button>
+                </div>
+                
+                {memberProfiles.length > 0 ? (
+                  <div className="space-y-4">
+                    {memberProfiles.map((profile) => (
+                      <div key={profile.id} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <span className="text-2xl">{getPlatformIcon(profile.platform)}</span>
+                            <div>
+                              <h5 className="text-sm font-medium text-gray-900 capitalize">{profile.platform}</h5>
+                              {profile.username && (
+                                <p className="text-sm text-gray-500">@{profile.username}</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            {profile.profile_url && (
+                              <a
+                                href={profile.profile_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary-600 hover:text-primary-900 text-sm"
+                              >
+                                查看资料
+                              </a>
+                            )}
+                            <button
+                              onClick={() => handleDeleteProfile(selectedMember.id, profile.id)}
+                              className="text-red-600 hover:text-red-900"
+                              title="删除配置"
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                        {profile.profile_url && (
+                          <div className="mt-2">
+                            <label className="block text-xs font-medium text-gray-700">个人资料URL</label>
+                            <p className="mt-1 text-xs text-gray-500 break-all">{profile.profile_url}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 bg-gray-50 rounded-lg">
+                    <p className="text-gray-500">暂无社交配置</p>
+                    <button
+                      onClick={() => {
+                        setShowDetailsModal(false);
+                        setShowProfileModal(true);
+                      }}
+                      className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-primary-600 bg-primary-50 hover:bg-primary-100"
+                    >
+                      <PlusIcon className="h-4 w-4 mr-1" />
+                      添加第一个配置
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowDetailsModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  关闭
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Create Member Modal */}
       {showCreateModal && (
