@@ -11,4 +11,10 @@ wheels/
 .env
 frontend/node_modules/
 .DS_Store
-.inspector.db
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+inspector.db
+inspector_cursor.db
