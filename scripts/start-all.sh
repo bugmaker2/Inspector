@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Inspector Cursor - 全栈应用启动脚本
+# Inspector - 全栈应用启动脚本
 
-echo "🚀 Starting Inspector Cursor Full Stack Application..."
+echo "🚀 Starting Inspector Full Stack Application..."
 echo "=================================================="
 
 # 检查后端依赖
@@ -71,7 +71,7 @@ else
 fi
 
 echo ""
-echo "🎉 Inspector Cursor is now running!"
+echo "🎉 Inspector is now running!"
 echo "=================================="
 echo "📊 Frontend: http://localhost:3000"
 echo "🔧 Backend API: http://localhost:8000"

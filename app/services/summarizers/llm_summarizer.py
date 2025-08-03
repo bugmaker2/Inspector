@@ -49,10 +49,11 @@ class LLMSummarizer:
         if not summary_content:
             return None
         
-        # Create summary record
+        # Create summary record with bilingual content
         summary = Summary(
             title=f"Daily Activity Summary - {date.strftime('%Y-%m-%d')}",
-            content=summary_content,
+            content=summary_content["chinese"],
+            content_en=summary_content["english"],
             summary_type="daily",
             start_date=start_date,
             end_date=end_date,
@@ -92,10 +93,11 @@ class LLMSummarizer:
         if not summary_content:
             return None
         
-        # Create summary record
+        # Create summary record with bilingual content
         summary = Summary(
             title=f"Weekly Activity Summary - {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}",
-            content=summary_content,
+            content=summary_content["chinese"],
+            content_en=summary_content["english"],
             summary_type="weekly",
             start_date=start_datetime,
             end_date=end_datetime,
@@ -131,10 +133,11 @@ class LLMSummarizer:
         if not summary_content:
             return None
         
-        # Create summary record
+        # Create summary record with bilingual content
         summary = Summary(
             title=title,
-            content=summary_content,
+            content=summary_content["chinese"],
+            content_en=summary_content["english"],
             summary_type="custom",
             start_date=start_date,
             end_date=end_date,
@@ -161,8 +164,8 @@ class LLMSummarizer:
         summary_type: str,
         start_date: datetime,
         end_date: datetime
-    ) -> Optional[str]:
-        """Generate summary content using LLM."""
+    ) -> Optional[Dict[str, str]]:
+        """Generate bilingual summary content using LLM."""
         if not activities:
             return None
         
@@ -197,53 +200,23 @@ class LLMSummarizer:
                 
                 activity_data.append(member_activity_summary)
         
-        # Create prompt for LLM
-        prompt = self._create_summary_prompt(activity_data, summary_type, start_date, end_date)
+        # Generate Chinese content
+        chinese_content = await self._generate_language_content(
+            activity_data, summary_type, start_date, end_date, "chinese"
+        )
         
-        try:
-            if "dashscope.aliyuncs.com" in settings.openai_base_url:
-                # 阿里云通义千问
-                headers = {
-                    "Authorization": f"Bearer {settings.openai_api_key}",
-                    "Content-Type": "application/json"
-                }
-                data = {
-                    "model": settings.openai_model,
-                    "messages": [
-                        {"role": "system", "content": "You are a professional social media activity analyst. Create concise, informative summaries of team member activities across various platforms."},
-                        {"role": "user", "content": prompt}
-                    ],
-                    "max_tokens": 2000,
-                    "temperature": 0.7
-                }
-                async with httpx.AsyncClient() as client:
-                    response = await client.post(
-                        settings.openai_base_url,
-                        headers=headers,
-                        json=data,
-                        timeout=30.0
-                    )
-                    if response.status_code == 200:
-                        result = response.json()
-                        return result["choices"][0]["message"]["content"]
-                    else:
-                        print(f"Aliyun API error: {response.status_code} {response.text}")
-                        return None
-            else:
-                response = self.client.chat.completions.create(
-                    model=settings.openai_model,
-                    messages=[
-                        {"role": "system", "content": "You are a professional social media activity analyst. Create concise, informative summaries of team member activities across various platforms."},
-                        {"role": "user", "content": prompt}
-                    ],
-                    max_tokens=2000,
-                    temperature=0.7
-                )
-                return response.choices[0].message.content
-            
-        except Exception as e:
-            print(f"Error generating LLM summary: {e}")
+        # Generate English content
+        english_content = await self._generate_language_content(
+            activity_data, summary_type, start_date, end_date, "english"
+        )
+        
+        if not chinese_content or not english_content:
             return None
+        
+        return {
+            "chinese": chinese_content,
+            "english": english_content
+        }
     
     def _create_summary_prompt(
         self, 
@@ -283,6 +256,117 @@ Make it professional, well-structured, and easy to read with clear sections and 
 """
         
         return prompt
+
+    async def _generate_language_content(
+        self,
+        activity_data: List[Dict],
+        summary_type: str,
+        start_date: datetime,
+        end_date: datetime,
+        language: str
+    ) -> Optional[str]:
+        """Generate content in specific language."""
+        date_range = f"{start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}"
+        
+        if language == "chinese":
+            system_prompt = "你是一位专业的社交媒体活动分析师。请为团队成员在各种平台上的活动创建简洁、信息丰富的总结报告。请用中文回答。"
+            prompt = f"""
+请为{date_range}期间的团队成员社交媒体活动创建{summary_type}总结报告。
+
+活动数据：
+{self._format_activity_data(activity_data)}
+
+请提供包含以下内容的综合总结：
+1. 整体活动概览和趋势
+2. 每位团队成员的关键亮点
+3. 平台特定洞察（LinkedIn、GitHub等）
+4. 值得注意的成就或里程碑
+5. 建议或观察
+
+**重要**：请使用Markdown格式，包含适当的标题、项目符号和格式。使用：
+- `#` 作为主标题
+- `##` 作为副标题
+- `###` 作为章节标题
+- `-` 作为项目符号
+- `**粗体**` 用于强调
+- `*斜体*` 用于次要强调
+- 使用 ``` 的代码块用于任何技术内容
+- 使用 | 的表格用于结构化数据
+
+使其专业、结构良好且易于阅读，具有清晰的章节和适当的Markdown格式。
+"""
+        else:  # english
+            system_prompt = "You are a professional social media activity analyst. Create concise, informative summaries of team member activities across various platforms."
+            prompt = f"""
+Please create a {summary_type} summary of team member social media activities for the period {date_range}.
+
+Activity Data:
+{self._format_activity_data(activity_data)}
+
+Please provide a comprehensive summary that includes:
+1. Overall activity overview and trends
+2. Key highlights from each team member
+3. Platform-specific insights (LinkedIn, GitHub, etc.)
+4. Notable achievements or milestones
+5. Recommendations or observations
+
+**IMPORTANT**: Format the summary in Markdown format with proper headings, bullet points, and formatting. Use:
+- `#` for main headings
+- `##` for subheadings
+- `###` for section headings
+- `-` for bullet points
+- `**bold**` for emphasis
+- `*italic*` for secondary emphasis
+- Code blocks with ``` for any technical content
+- Tables with | for structured data
+
+Make it professional, well-structured, and easy to read with clear sections and proper Markdown formatting.
+"""
+        
+        try:
+            if "dashscope.aliyuncs.com" in settings.openai_base_url:
+                # 阿里云通义千问
+                headers = {
+                    "Authorization": f"Bearer {settings.openai_api_key}",
+                    "Content-Type": "application/json"
+                }
+                data = {
+                    "model": settings.openai_model,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt}
+                    ],
+                    "max_tokens": 2000,
+                    "temperature": 0.7
+                }
+                async with httpx.AsyncClient() as client:
+                    response = await client.post(
+                        settings.openai_base_url,
+                        headers=headers,
+                        json=data,
+                        timeout=30.0
+                    )
+                    if response.status_code == 200:
+                        result = response.json()
+                        return result["choices"][0]["message"]["content"]
+                    else:
+                        print(f"Aliyun API error: {response.status_code} {response.text}")
+                        return None
+            else:
+                response = self.client.chat.completions.create(
+                    model=settings.openai_model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=2000,
+                    temperature=0.7
+                )
+                return response.choices[0].message.content
+            
+        except Exception as e:
+            print(f"Error generating {language} LLM summary: {e}")
+            return None
     
     def _format_activity_data(self, activity_data: List[Dict]) -> str:
         """Format activity data for LLM prompt."""
@@ -343,7 +427,7 @@ Make it professional, well-structured, and easy to read with clear sections and 
         if not activities:
             return None
         
-        # Generate summary content
+        # Generate bilingual summary content
         summary_content = await self._generate_member_summary_content(
             member, activities, start_date, end_date
         )
@@ -351,10 +435,11 @@ Make it professional, well-structured, and easy to read with clear sections and 
         if not summary_content:
             return None
         
-        # Create summary record
+        # Create summary record with bilingual content
         summary = Summary(
             title=f"{member.name} - Activity Summary ({start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')})",
-            content=summary_content,
+            content=summary_content["chinese"],
+            content_en=summary_content["english"],
             summary_type="member",
             start_date=start_date,
             end_date=end_date,
@@ -374,8 +459,8 @@ Make it professional, well-structured, and easy to read with clear sections and 
         activities: List[Activity],
         start_date: datetime,
         end_date: datetime
-    ) -> Optional[str]:
-        """Generate summary content for a specific member."""
+    ) -> Optional[Dict[str, str]]:
+        """Generate bilingual summary content for a specific member."""
         if not activities:
             return None
         
@@ -392,8 +477,101 @@ Make it professional, well-structured, and easy to read with clear sections and 
                 "created_at": activity.created_at.isoformat()
             })
         
-        # Create prompt for LLM
-        prompt = self._create_member_summary_prompt(member, activity_data, start_date, end_date)
+        # Generate Chinese content
+        chinese_content = await self._generate_member_language_content(
+            member, activity_data, start_date, end_date, "chinese"
+        )
+        
+        # Generate English content
+        english_content = await self._generate_member_language_content(
+            member, activity_data, start_date, end_date, "english"
+        )
+        
+        if not chinese_content or not english_content:
+            return None
+        
+        return {
+            "chinese": chinese_content,
+            "english": english_content
+        }
+
+    async def _generate_member_language_content(
+        self,
+        member: Member,
+        activity_data: List[Dict],
+        start_date: datetime,
+        end_date: datetime,
+        language: str
+    ) -> Optional[str]:
+        """Generate content in specific language for a member."""
+        date_range = f"{start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}"
+        
+        if language == "chinese":
+            system_prompt = "你是一位专业的社交媒体活动分析师。请为团队成员在各种平台上的活动创建简洁、信息丰富的总结报告。请用中文回答。"
+            prompt = f"""
+请为{member.name}在{date_range}期间的社交媒体活动创建总结报告。
+
+成员信息：
+- 姓名：{member.name}
+- 职位：{member.position or '未指定'}
+- 部门：{member.department or '未指定'}
+
+活动数据：
+{self._format_member_activity_data(activity_data)}
+
+请提供包含以下内容的综合总结：
+1. 整体活动概览和参与度水平
+2. 关键亮点和值得注意的活动
+3. 平台特定洞察（LinkedIn、GitHub等）
+4. 专业发展和成就
+5. 在线存在趋势和模式
+6. 建议或观察
+
+**重要**：请使用Markdown格式，包含适当的标题、项目符号和格式。使用：
+- `#` 作为主标题
+- `##` 作为副标题
+- `###` 作为章节标题
+- `-` 作为项目符号
+- `**粗体**` 用于强调
+- `*斜体*` 用于次要强调
+- 使用 ``` 的代码块用于任何技术内容
+- 使用 | 的表格用于结构化数据
+
+使其专业、结构良好且易于阅读，具有清晰的章节和适当的Markdown格式。保持简洁但信息丰富，重点关注其活动的最重要方面。
+"""
+        else:  # english
+            system_prompt = "You are a professional social media activity analyst. Create concise, informative summaries of individual team member activities."
+            prompt = f"""
+Please create a summary of {member.name}'s social media activities for the period {date_range}.
+
+Member Information:
+- Name: {member.name}
+- Position: {member.position or 'Not specified'}
+- Department: {member.department or 'Not specified'}
+
+Activity Data:
+{self._format_member_activity_data(activity_data)}
+
+Please provide a comprehensive summary that includes:
+1. Overall activity overview and engagement level
+2. Key highlights and notable activities
+3. Platform-specific insights (LinkedIn, GitHub, etc.)
+4. Professional development and achievements
+5. Trends and patterns in their online presence
+6. Recommendations or observations
+
+**IMPORTANT**: Format the summary in Markdown format with proper headings, bullet points, and formatting. Use:
+- `#` for main headings
+- `##` for subheadings
+- `###` for section headings
+- `-` for bullet points
+- `**bold**` for emphasis
+- `*italic*` for secondary emphasis
+- Code blocks with ``` for any technical content
+- Tables with | for structured data
+
+Make it professional, well-structured, and easy to read with clear sections and proper Markdown formatting. Keep it concise but informative, focusing on the most important aspects of their activities.
+"""
         
         try:
             if "dashscope.aliyuncs.com" in settings.openai_base_url:
@@ -404,10 +582,10 @@ Make it professional, well-structured, and easy to read with clear sections and 
                 data = {
                     "model": settings.openai_model,
                     "messages": [
-                        {"role": "system", "content": "You are a professional social media activity analyst. Create concise, informative summaries of individual team member activities."},
+                        {"role": "system", "content": system_prompt},
                         {"role": "user", "content": prompt}
                     ],
-                    "max_tokens": 1500,
+                    "max_tokens": 2000,
                     "temperature": 0.7
                 }
                 async with httpx.AsyncClient() as client:
@@ -427,16 +605,16 @@ Make it professional, well-structured, and easy to read with clear sections and 
                 response = self.client.chat.completions.create(
                     model=settings.openai_model,
                     messages=[
-                        {"role": "system", "content": "You are a professional social media activity analyst. Create concise, informative summaries of individual team member activities."},
+                        {"role": "system", "content": system_prompt},
                         {"role": "user", "content": prompt}
                     ],
-                    max_tokens=1500,
+                    max_tokens=2000,
                     temperature=0.7
                 )
                 return response.choices[0].message.content
             
         except Exception as e:
-            print(f"Error generating member LLM summary: {e}")
+            print(f"Error generating {language} LLM summary for member {member.id}: {e}")
             return None
 
     def _create_member_summary_prompt(

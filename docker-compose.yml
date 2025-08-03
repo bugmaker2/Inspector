@@ -1,12 +1,12 @@
 version: '3.8'
 
 services:
-  inspector-cursor:
+  inspector:
     build: .
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://inspector:password@db:5432/inspector_cursor
+      - DATABASE_URL=postgresql://inspector:password@db:5432/inspector
       - API_HOST=0.0.0.0
       - API_PORT=8000
       - LOG_LEVEL=INFO
@@ -23,7 +23,7 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      - POSTGRES_DB=inspector_cursor
+      - POSTGRES_DB=inspector
       - POSTGRES_USER=inspector
       - POSTGRES_PASSWORD=password
     volumes:
@@ -43,7 +43,7 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./ssl:/etc/nginx/ssl:ro
     depends_on:
-      - inspector-cursor
+      - inspector
     restart: unless-stopped
     networks:
       - inspector-network

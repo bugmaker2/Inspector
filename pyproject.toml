@@ -1,5 +1,5 @@
 [project]
-name = "inspector-cursor"
+name = "inspector"
 version = "0.1.0"
 description = "Social media activity monitoring and summarization service"
 readme = "README.md"

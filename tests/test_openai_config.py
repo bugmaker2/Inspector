@@ -79,7 +79,7 @@ def show_usage_examples():
 
 def main():
     """主函数"""
-    print("🚀 Inspector Cursor - OpenAI配置测试")
+    print("🚀 Inspector - OpenAI配置测试")
     print("=" * 50)
     
     # 测试配置

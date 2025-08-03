@@ -1,4 +1,4 @@
-# 🚀 Inspector Cursor 系统运行状态报告
+# 🚀 Inspector 系统运行状态报告
 
 ## ✅ 系统状态概览
 
@@ -21,7 +21,7 @@
 
 ### 数据库 (SQLite)
 - **状态**: ✅ 连接正常
-- **文件**: inspector_cursor.db
+- **文件**: inspector.db
 - **表结构**: ✅ 完整
 
 ## 📊 数据统计
@@ -109,7 +109,7 @@
 ### 环境配置
 ```ini
 # 数据库
-DATABASE_URL=sqlite:///./inspector_cursor.db
+DATABASE_URL=sqlite:///./inspector.db
 
 # API服务
 API_HOST=0.0.0.0
@@ -158,7 +158,7 @@ EMAIL_ENABLED=false
 
 ### 日志级别
 - **当前级别**: INFO
-- **日志文件**: ./logs/inspector_cursor.log
+- **日志文件**: ./logs/inspector.log
 
 ### 监控指标
 - **服务可用性**: 100%
@@ -167,7 +167,7 @@ EMAIL_ENABLED=false
 
 ## 🎉 系统总结
 
-**Inspector Cursor** 系统已完全正常运行，所有核心功能都已验证通过：
+**Inspector** 系统已完全正常运行，所有核心功能都已验证通过：
 
 ### ✅ 主要成就
 - 🏗️ **完整架构**: 前后端分离，模块化设计
@@ -191,7 +191,7 @@ EMAIL_ENABLED=false
 
 ## 🎊 系统就绪！
 
-**Inspector Cursor** 已准备就绪，可以开始使用智能化的团队管理功能！
+**Inspector** 已准备就绪，可以开始使用智能化的团队管理功能！
 
 **立即开始**: http://localhost:3000
 

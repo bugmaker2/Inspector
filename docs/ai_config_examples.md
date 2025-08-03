@@ -1,6 +1,6 @@
 # AI平台配置示例
 
-Inspector Cursor 支持多种AI平台，可以通过配置不同的base URL来使用不同的模型服务。
+Inspector 支持多种AI平台，可以通过配置不同的base URL来使用不同的模型服务。
 
 ## 🔧 配置方法
 

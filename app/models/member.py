@@ -76,7 +76,8 @@ class Summary(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(200), nullable=False)
-    content = Column(Text, nullable=False)
+    content = Column(Text, nullable=False)  # 中文内容
+    content_en = Column(Text)  # 英文内容
     summary_type = Column(String(50))  # daily, weekly, monthly
     start_date = Column(DateTime)
     end_date = Column(DateTime)

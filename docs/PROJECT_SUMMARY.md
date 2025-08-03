@@ -1,8 +1,8 @@
-# Inspector Cursor 项目总结
+# Inspector 项目总结
 
 ## 项目概述
 
-Inspector Cursor 是一个功能完整的社交动态监控和总结服务器端应用，能够自动监控团队成员在LinkedIn、GitHub等平台的动态，并使用LLM生成定期总结报告。
+Inspector 是一个功能完整的社交动态监控和总结服务器端应用，能够自动监控团队成员在LinkedIn、GitHub等平台的动态，并使用LLM生成定期总结报告。
 
 ## 已实现功能
 
@@ -26,7 +26,7 @@ Inspector Cursor 是一个功能完整的社交动态监控和总结服务器端
 ### ✅ 项目结构
 
 ```
-Inspector-Cursor/
+Inspector/
 ├── app/
 │   ├── api/v1/           # API路由
 │   ├── core/             # 核心配置
@@ -106,8 +106,8 @@ uv run python main.py
 docker-compose up -d
 
 # 或单独使用Docker
-docker build -t inspector-cursor .
-docker run -d -p 8000:8000 --env-file .env inspector-cursor
+docker build -t inspector .
+docker run -d -p 8000:8000 --env-file .env inspector
 ```
 
 ## 配置说明
@@ -175,4 +175,4 @@ docker run -d -p 8000:8000 --env-file .env inspector-cursor
 
 ## 总结
 
-Inspector Cursor 是一个功能完整、架构清晰的社交动态监控系统，具备良好的扩展性和可维护性。通过模块化设计和现代技术栈，为团队提供了强大的社交媒体活动监控和总结能力。
+Inspector 是一个功能完整、架构清晰的社交动态监控系统，具备良好的扩展性和可维护性。通过模块化设计和现代技术栈，为团队提供了强大的社交媒体活动监控和总结能力。

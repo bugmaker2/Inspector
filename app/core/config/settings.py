@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     
     # Database
     database_url: str = Field(
-        default="sqlite:///./inspector_cursor.db",
+        default="sqlite:///./inspector.db",
         description="Database connection URL"
     )
     

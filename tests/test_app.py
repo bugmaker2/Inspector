@@ -1,4 +1,4 @@
-"""Test script for Inspector Cursor application."""
+"""Test script for Inspector application."""
 
 import asyncio
 import requests
@@ -10,7 +10,7 @@ def test_api_endpoints():
     """Test basic API endpoints."""
     base_url = "http://localhost:8000"
     
-    print("🧪 Testing Inspector Cursor API...")
+    print("🧪 Testing Inspector API...")
     
     # Test health check
     try:
@@ -149,7 +149,7 @@ def test_monitoring():
 
 def main():
     """Run all tests."""
-    print("🚀 Inspector Cursor Test Suite")
+    print("🚀 Inspector Test Suite")
     print("=" * 50)
     
     # Test basic API

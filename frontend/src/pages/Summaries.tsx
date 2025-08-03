@@ -9,14 +9,15 @@ const Summaries: React.FC = () => {
   const [summaries, setSummaries] = useState<Summary[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [language, setLanguage] = useState<'chinese' | 'english'>('chinese');  // 添加语言状态
 
   useEffect(() => {
     loadSummaries();
-  }, []);
+  }, [language]);  // 当语言改变时重新加载
 
   const loadSummaries = async () => {
     try {
-      const data = await monitoringApi.getSummaries({ limit: 20 });
+      const data = await monitoringApi.getSummaries({ limit: 20, language });  // 传递语言参数
       setSummaries(data);
     } catch (error) {
       toast.error('加载总结列表失败');
@@ -40,6 +41,10 @@ const Summaries: React.FC = () => {
     }
   };
 
+  const toggleLanguage = () => {
+    setLanguage(prev => prev === 'chinese' ? 'english' : 'chinese');
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -52,23 +57,42 @@ const Summaries: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">总结报告</h1>
-          <p className="text-gray-600">查看AI生成的社交动态总结报告</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {language === 'chinese' ? '总结报告' : 'Summary Reports'}
+          </h1>
+          <p className="text-gray-600">
+            {language === 'chinese' ? '查看AI生成的社交动态总结报告' : 'View AI-generated social media activity summary reports'}
+          </p>
         </div>
-        <button
-          onClick={generateDailySummary}
-          disabled={generating}
-          className="bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
-        >
-          {generating ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              <span>生成中...</span>
-            </>
-          ) : (
-            <span>生成每日总结</span>
-          )}
-        </button>
+        <div className="flex items-center space-x-4">
+          {/* 语言切换按钮 */}
+          <button
+            onClick={toggleLanguage}
+            className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+          >
+            <span className="text-sm font-medium">
+              {language === 'chinese' ? '🇨🇳 中文' : '🇺🇸 English'}
+            </span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          <button
+            onClick={generateDailySummary}
+            disabled={generating}
+            className="bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+          >
+            {generating ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span>{language === 'chinese' ? '生成中...' : 'Generating...'}</span>
+              </>
+            ) : (
+              <span>{language === 'chinese' ? '生成每日总结' : 'Generate Daily Summary'}</span>
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="grid gap-6">
@@ -82,8 +106,9 @@ const Summaries: React.FC = () => {
                   summary.summary_type === 'weekly' ? 'bg-green-100 text-green-800' :
                   'bg-gray-100 text-gray-800'
                 }`}>
-                  {summary.summary_type === 'daily' ? '每日' :
-                   summary.summary_type === 'weekly' ? '每周' : '自定义'}
+                  {summary.summary_type === 'daily' ? (language === 'chinese' ? '每日' : 'Daily') :
+                   summary.summary_type === 'weekly' ? (language === 'chinese' ? '每周' : 'Weekly') : 
+                   (language === 'chinese' ? '自定义' : 'Custom')}
                 </span>
               </div>
               
@@ -177,19 +202,19 @@ const Summaries: React.FC = () => {
               
               <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
                 <div className="flex items-center space-x-4">
-                  <span>成员数: {summary.member_count}</span>
-                  <span>活动数: {summary.activity_count}</span>
+                  <span>{language === 'chinese' ? '成员数' : 'Members'}: {summary.member_count}</span>
+                  <span>{language === 'chinese' ? '活动数' : 'Activities'}: {summary.activity_count}</span>
                   {summary.start_date && (
-                    <span>开始: {new Date(summary.start_date).toLocaleDateString()}</span>
+                    <span>{language === 'chinese' ? '开始' : 'Start'}: {new Date(summary.start_date).toLocaleDateString()}</span>
                   )}
                   {summary.end_date && (
-                    <span>结束: {new Date(summary.end_date).toLocaleDateString()}</span>
+                    <span>{language === 'chinese' ? '结束' : 'End'}: {new Date(summary.end_date).toLocaleDateString()}</span>
                   )}
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span>创建时间: {new Date(summary.created_at).toLocaleString()}</span>
+                  <span>{language === 'chinese' ? '创建时间' : 'Created'}: {new Date(summary.created_at).toLocaleString()}</span>
                   {summary.is_sent && (
-                    <span className="text-green-600">已发送</span>
+                    <span className="text-green-600">{language === 'chinese' ? '已发送' : 'Sent'}</span>
                   )}
                 </div>
               </div>
@@ -199,13 +224,18 @@ const Summaries: React.FC = () => {
         
         {summaries.length === 0 && (
           <div className="text-center py-12 bg-white shadow rounded-lg">
-            <p className="text-gray-500">暂无总结报告</p>
+            <p className="text-gray-500">
+              {language === 'chinese' ? '暂无总结报告' : 'No summary reports available'}
+            </p>
             <button
               onClick={generateDailySummary}
               disabled={generating}
               className="mt-4 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg"
             >
-              {generating ? '生成中...' : '生成第一个总结'}
+              {generating ? 
+                (language === 'chinese' ? '生成中...' : 'Generating...') : 
+                (language === 'chinese' ? '生成第一个总结' : 'Generate First Summary')
+              }
             </button>
           </div>
         )}

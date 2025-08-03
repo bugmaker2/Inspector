@@ -95,6 +95,7 @@ class Activity(ActivityBase):
 class SummaryBase(BaseModel):
     title: str
     content: str
+    content_en: Optional[str] = None  # 英文内容
     summary_type: str
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None

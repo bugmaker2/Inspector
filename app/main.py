@@ -25,7 +25,7 @@ Base.metadata.create_all(bind=engine)
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
     # Startup
-    print("Starting Inspector Cursor application...")
+    print("Starting Inspector application...")
     
     # Start background tasks
     background_tasks = BackgroundTasks()
@@ -34,12 +34,12 @@ async def lifespan(app: FastAPI):
     yield
     
     # Shutdown
-    print("Shutting down Inspector Cursor application...")
+    print("Shutting down Inspector application...")
 
 
 # Create FastAPI app
 app = FastAPI(
-    title="Inspector Cursor",
+    title="Inspector",
     description="Social media activity monitoring and summarization service",
     version="1.0.0",
     lifespan=lifespan
@@ -72,7 +72,7 @@ app.include_router(
 async def root():
     """Root endpoint."""
     return {
-        "message": "Inspector Cursor API",
+        "message": "Inspector API",
         "version": "1.0.0",
         "status": "running"
     }

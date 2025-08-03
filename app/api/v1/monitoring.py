@@ -207,28 +207,63 @@ def get_summaries(
     skip: int = 0,
     limit: int = 20,
     summary_type: str = None,
+    language: str = "chinese",  # 添加语言参数，默认为中文
     db: Session = Depends(get_db)
 ):
-    """Get generated summaries."""
-    query = db.query(Summary)
-    
-    if summary_type:
-        query = query.filter(Summary.summary_type == summary_type)
-    
-    summaries = query.order_by(Summary.created_at.desc()).offset(skip).limit(limit).all()
-    return summaries
+    """Get summaries with optional filtering and language selection."""
+    try:
+        query = db.query(Summary)
+        
+        if summary_type:
+            query = query.filter(Summary.summary_type == summary_type)
+        
+        summaries = query.order_by(Summary.created_at.desc()).offset(skip).limit(limit).all()
+        
+        # 根据语言参数返回相应的内容
+        result = []
+        for summary in summaries:
+            summary_dict = SummarySchema.from_orm(summary).dict()
+            if language == "english" and summary.content_en:
+                summary_dict["content"] = summary.content_en
+            # 如果选择英文但没有英文内容，保持中文内容
+            result.append(SummarySchema(**summary_dict))
+        
+        return result
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get summaries: {str(e)}"
+        )
 
 
 @router.get("/summaries/{summary_id}", response_model=SummarySchema)
-def get_summary(summary_id: int, db: Session = Depends(get_db)):
-    """Get a specific summary."""
-    summary = db.query(Summary).filter(Summary.id == summary_id).first()
-    if not summary:
+def get_summary(
+    summary_id: int, 
+    language: str = "chinese",  # 添加语言参数，默认为中文
+    db: Session = Depends(get_db)
+):
+    """Get a specific summary by ID with language selection."""
+    try:
+        summary = db.query(Summary).filter(Summary.id == summary_id).first()
+        if not summary:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Summary not found"
+            )
+        
+        summary_dict = SummarySchema.from_orm(summary).dict()
+        if language == "english" and summary.content_en:
+            summary_dict["content"] = summary.content_en
+        # 如果选择英文但没有英文内容，保持中文内容
+        
+        return SummarySchema(**summary_dict)
+    except HTTPException:
+        raise
+    except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Summary not found"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get summary: {str(e)}"
         )
-    return summary
 
 
 @router.post("/generate-member-summary/{member_id}", response_model=SummarySchema, status_code=status.HTTP_201_CREATED)

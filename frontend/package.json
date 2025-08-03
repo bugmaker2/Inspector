@@ -1,5 +1,5 @@
 {
-  "name": "inspector-cursor-frontend",
+  "name": "inspector-frontend",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

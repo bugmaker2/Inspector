@@ -1,4 +1,4 @@
-# 🚀 Inspector Cursor 快速启动指南
+# 🚀 Inspector 快速启动指南
 
 ## 一键启动（推荐）
 
@@ -85,7 +85,7 @@ OPENAI_API_KEY=your-openai-api-key-here
 GITHUB_TOKEN=your-github-personal-access-token
 
 # 数据库配置
-DATABASE_URL=sqlite:///./inspector_cursor.db
+DATABASE_URL=sqlite:///./inspector.db
 
 # 其他配置保持默认即可
 ```
@@ -125,7 +125,7 @@ kill -9 <PID>
 #### 3. 数据库错误
 ```bash
 # 删除现有数据库重新开始
-rm inspector_cursor.db
+rm inspector.db
 uv run python main.py
 ```
 
@@ -186,4 +186,4 @@ docker-compose logs -f
 
 ---
 
-🎉 **享受使用 Inspector Cursor！** 
+🎉 **享受使用 Inspector！** 

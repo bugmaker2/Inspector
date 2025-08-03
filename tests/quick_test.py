@@ -78,7 +78,7 @@ def test_social_profile_creation():
 
 def main():
     """主测试函数"""
-    print("🔧 Inspector Cursor 社交配置修复验证")
+    print("🔧 Inspector 社交配置修复验证")
     print("=" * 50)
     
     # 等待服务启动

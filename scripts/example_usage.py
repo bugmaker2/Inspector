@@ -1,12 +1,12 @@
-"""Example usage of Inspector Cursor API."""
+"""Example usage of Inspector API."""
 
 import requests
 import json
 from datetime import datetime
 
 
-class InspectorCursorClient:
-    """Client for Inspector Cursor API."""
+class InspectorClient:
+    """Client for Inspector API."""
     
     def __init__(self, base_url="http://localhost:8000"):
         self.base_url = base_url
@@ -96,12 +96,12 @@ class InspectorCursorClient:
 
 
 def main():
-    """Example usage of Inspector Cursor."""
-    print("🔍 Inspector Cursor Example Usage")
+    """Example usage of Inspector."""
+    print("🔍 Inspector Example Usage")
     print("=" * 50)
     
     # Initialize client
-    client = InspectorCursorClient()
+    client = InspectorClient()
     
     try:
         # Get current stats

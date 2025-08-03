@@ -1,8 +1,8 @@
-# Inspector Cursor 前端界面
+# Inspector 前端界面
 
 ## 概述
 
-Inspector Cursor 前端是一个现代化的 React + TypeScript + Tailwind CSS 管理界面，提供了直观的交互式管理功能。
+Inspector 前端是一个现代化的 React + TypeScript + Tailwind CSS 管理界面，提供了直观的交互式管理功能。
 
 ## 技术栈
 

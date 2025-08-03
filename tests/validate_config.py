@@ -204,7 +204,7 @@ def test_email_config():
         
         # 创建测试邮件
         msg = MIMEText("这是一封测试邮件")
-        msg['Subject'] = "Inspector Cursor 配置测试"
+        msg['Subject'] = "Inspector 配置测试"
         msg['From'] = settings.email_username
         msg['To'] = settings.email_recipients_list[0] if settings.email_recipients_list else settings.email_username
         
@@ -262,7 +262,7 @@ def check_config_values():
     if settings.secret_key == "your-secret-key-change-in-production":
         issues.append("使用默认密钥，建议在生产环境中更改")
     
-    if settings.database_url == "sqlite:///./inspector_cursor.db":
+    if settings.database_url == "sqlite:///./inspector.db":
         print("ℹ️  使用SQLite数据库 (开发环境)")
     
     if settings.api_host == "0.0.0.0":
@@ -278,12 +278,12 @@ def check_config_values():
 
 async def main():
     """主函数"""
-    parser = argparse.ArgumentParser(description="Inspector Cursor 配置验证工具")
+    parser = argparse.ArgumentParser(description="Inspector 配置验证工具")
     parser.add_argument("--skip-api", action="store_true", help="跳过API端点测试")
     parser.add_argument("--skip-external", action="store_true", help="跳过外部服务测试(OpenAI, GitHub)")
     args = parser.parse_args()
     
-    print("🔍 Inspector Cursor - 配置有效性验证")
+    print("🔍 Inspector - 配置有效性验证")
     print("=" * 60)
     
     # 检查.env文件是否存在

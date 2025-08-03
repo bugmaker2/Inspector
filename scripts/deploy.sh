@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Inspector Cursor Deployment Script
+# Inspector Deployment Script
 
 set -e
 
-echo "🚀 Inspector Cursor Deployment Script"
+echo "🚀 Inspector Deployment Script"
 echo "======================================"
 
 # Check if .env file exists
@@ -40,7 +40,7 @@ if [ -f "alembic.ini" ]; then
 fi
 
 # Start the application
-echo "🚀 Starting Inspector Cursor..."
+echo "🚀 Starting Inspector..."
 echo "   API will be available at http://localhost:8000"
 echo "   API documentation at http://localhost:8000/docs"
 echo "   Press Ctrl+C to stop"

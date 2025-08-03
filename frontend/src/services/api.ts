@@ -130,14 +130,16 @@ export const monitoringApi = {
     skip?: number;
     limit?: number;
     summary_type?: string;
+    language?: string;  // 添加语言参数
   }): Promise<Summary[]> => {
     const response = await api.get(`${API_PREFIX}/monitoring/summaries`, { params });
     return response.data;
   },
 
   // 获取单个总结
-  getSummary: async (id: number): Promise<Summary> => {
-    const response = await api.get(`${API_PREFIX}/monitoring/summaries/${id}`);
+  getSummary: async (id: number, language?: string): Promise<Summary> => {  // 添加语言参数
+    const params = language ? { language } : {};
+    const response = await api.get(`${API_PREFIX}/monitoring/summaries/${id}`, { params });
     return response.data;
   },
 };

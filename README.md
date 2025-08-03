@@ -1,4 +1,4 @@
-# Inspector Cursor - 社交动态监控系统
+# Inspector - 社交动态监控系统
 
 [![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com)
@@ -80,7 +80,7 @@ graph TB
 
 ```bash
 git clone <repository-url>
-cd Inspector-Cursor
+cd Inspector
 ```
 
 ### 2. 配置环境
@@ -105,7 +105,7 @@ OPENAI_MODEL=gpt-3.5-turbo
 GITHUB_TOKEN=your-github-personal-access-token
 
 # 数据库配置
-DATABASE_URL=sqlite:///./inspector_cursor.db
+DATABASE_URL=sqlite:///./inspector.db
 
 # 邮件通知配置 (可选)
 EMAIL_RECIPIENTS=recipient1@example.com,recipient2@example.com
@@ -298,27 +298,27 @@ docker-compose up -d
 docker-compose ps
 
 # 查看日志
-docker-compose logs -f inspector-cursor
+docker-compose logs -f inspector
 ```
 
 ### 自定义部署
 
 ```bash
 # 构建镜像
-docker build -t inspector-cursor .
+docker build -t inspector .
 
 # 运行容器
 docker run -d \
-  --name inspector-cursor \
+  --name inspector \
   -p 8000:8000 \
   --env-file .env \
-  inspector-cursor
+  inspector
 ```
 
 ## 📁 项目结构
 
 ```
-Inspector-Cursor/
+Inspector/
 ├── app/                          # 后端应用
 │   ├── api/v1/                   # API路由
 │   │   ├── members.py           # 成员管理API
@@ -418,7 +418,7 @@ A: 检查数据库URL配置，确保数据库服务可用
 tail -f logs/app.log
 
 # 查看Docker日志
-docker-compose logs -f inspector-cursor
+docker-compose logs -f inspector
 ```
 
 ## 📊 性能优化
@@ -456,4 +456,4 @@ docker-compose logs -f inspector-cursor
 
 ---
 
-**Inspector Cursor** - 让团队协作更智能，让信息获取更高效！ 🚀
+**Inspector** - 让团队协作更智能，让信息获取更高效！ 🚀

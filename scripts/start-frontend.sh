@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Inspector Cursor Frontend Startup Script
+# Inspector Frontend Startup Script
 
-echo "🚀 Starting Inspector Cursor Frontend..."
+echo "🚀 Starting Inspector Frontend..."
 echo "======================================"
 
 # Check if we're in the right directory

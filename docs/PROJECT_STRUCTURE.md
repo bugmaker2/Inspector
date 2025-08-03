@@ -1,9 +1,9 @@
-# Inspector Cursor 项目结构
+# Inspector 项目结构
 
 ## 📁 目录结构
 
 ```
-Inspector-Cursor/
+Inspector/
 ├── README.md                 # 项目主要文档
 ├── main.py                   # 应用入口点
 ├── pyproject.toml            # Python项目配置
@@ -11,7 +11,7 @@ Inspector-Cursor/
 ├── .gitignore               # Git忽略文件
 ├── docker-compose.yml       # Docker Compose配置
 ├── Dockerfile               # Docker镜像配置
-├── inspector_cursor.db      # SQLite数据库文件
+├── inspector.db      # SQLite数据库文件
 │
 ├── app/                     # 后端应用代码
 │   ├── api/                 # API路由
@@ -60,7 +60,7 @@ Inspector-Cursor/
 - **pyproject.toml**: Python项目配置，包含依赖和构建设置
 - **docker-compose.yml**: Docker容器编排配置
 - **Dockerfile**: Docker镜像构建配置
-- **inspector_cursor.db**: SQLite数据库文件
+- **inspector.db**: SQLite数据库文件
 
 ### 应用代码 (app/)
 - **api/**: FastAPI路由和端点定义

@@ -1,4 +1,4 @@
-# 🎉 Inspector Cursor 项目完成状态
+# 🎉 Inspector 项目完成状态
 
 ## ✅ 已完成功能
 
@@ -166,7 +166,7 @@ cd frontend && npm start
 
 ## 🎊 项目完成！
 
-**Inspector Cursor** 已经成功构建完成，是一个功能完整、架构优雅的社交动态监控和总结系统。
+**Inspector** 已经成功构建完成，是一个功能完整、架构优雅的社交动态监控和总结系统。
 
 **立即开始使用**: http://localhost:3000
 

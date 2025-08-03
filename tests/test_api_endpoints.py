@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 API端点测试脚本
-用于测试Inspector Cursor的所有API端点
+用于测试Inspector的所有API端点
 """
 
 import asyncio
@@ -203,7 +203,7 @@ async def test_docs_endpoint():
 
 async def main():
     """主函数"""
-    print("🚀 Inspector Cursor - API端点测试")
+    print("🚀 Inspector - API端点测试")
     print("=" * 60)
     
     # 测试所有端点
