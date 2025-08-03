@@ -60,26 +60,26 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">仪表板</h1>
-          <p className="text-gray-600">监控团队成员社交动态的概览</p>
+          <h1 className="text-2xl font-bold text-gray-900 break-words">仪表板</h1>
+          <p className="text-gray-600 break-words">监控团队成员社交动态的概览</p>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={runMonitoring}
             disabled={monitoringLoading}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+            className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
           >
             <PlayIcon className="h-4 w-4 mr-2" />
-            {monitoringLoading ? '监控中...' : '运行监控'}
+            <span className="whitespace-nowrap">{monitoringLoading ? '监控中...' : '运行监控'}</span>
           </button>
           <button
             onClick={generateDailySummary}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
           >
             <DocumentTextIcon className="h-4 w-4 mr-2" />
-            生成总结
+            <span className="whitespace-nowrap">生成总结</span>
           </button>
         </div>
       </div>

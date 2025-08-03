@@ -154,10 +154,10 @@ const Members: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">成员管理</h1>
-          <p className="text-gray-600">管理团队成员和社交配置</p>
+          <h1 className="text-2xl font-bold text-gray-900 break-words">成员管理</h1>
+          <p className="text-gray-600 break-words">管理团队成员和社交配置</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
@@ -174,8 +174,8 @@ const Members: React.FC = () => {
           {members.map((member) => (
             <li key={member.id}>
               <div className="px-4 py-4 sm:px-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                  <div className="flex items-start">
                     <div className="flex-shrink-0">
                       <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
                         <span className="text-primary-800 font-medium">
@@ -183,40 +183,40 @@ const Members: React.FC = () => {
                         </span>
                       </div>
                     </div>
-                    <div className="ml-4">
-                      <div className="flex items-center">
-                        <p className="text-sm font-medium text-gray-900">{member.name}</p>
+                    <div className="ml-4 flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <p className="text-sm font-medium text-gray-900 break-words">{member.name}</p>
                         {!member.is_active && (
-                          <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 whitespace-nowrap">
                             非活跃
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-500">{member.email}</p>
+                      <p className="text-sm text-gray-500 break-all">{member.email}</p>
                       {member.position && (
-                        <p className="text-sm text-gray-500">{member.position}</p>
+                        <p className="text-sm text-gray-500 break-words">{member.position}</p>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex flex-wrap items-center gap-2 lg:flex-shrink-0">
                     <button
                       onClick={() => handleViewDetails(member)}
-                      className="text-primary-600 hover:text-primary-900 flex items-center"
+                      className="text-primary-600 hover:text-primary-900 flex items-center text-sm"
                       title="查看详情"
                     >
                       <EyeIcon className="h-4 w-4 mr-1" />
-                      查看配置
+                      <span className="whitespace-nowrap">查看配置</span>
                     </button>
                     <button
                       onClick={() => {
                         setSelectedMember(member);
                         setShowProfileModal(true);
                       }}
-                      className="text-green-600 hover:text-green-900 flex items-center"
+                      className="text-green-600 hover:text-green-900 flex items-center text-sm"
                       title="添加配置"
                     >
                       <PlusIcon className="h-4 w-4 mr-1" />
-                      添加配置
+                      <span className="whitespace-nowrap">添加配置</span>
                     </button>
                     <button
                       onClick={() => handleDeleteMember(member.id)}
@@ -231,14 +231,14 @@ const Members: React.FC = () => {
                 {/* Social Profiles Summary */}
                 {member.social_profiles && member.social_profiles.length > 0 && (
                   <div className="mt-4">
-                    <h4 className="text-sm font-medium text-gray-900 mb-2">社交配置 ({member.social_profiles.length})</h4>
+                    <h4 className="text-sm font-medium text-gray-900 mb-2 break-words">社交配置 ({member.social_profiles.length})</h4>
                     <div className="flex flex-wrap gap-2">
                       {member.social_profiles.map((profile) => (
                         <span
                           key={profile.id}
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPlatformColor(profile.platform)}`}
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPlatformColor(profile.platform)} break-words`}
                         >
-                          {getPlatformIcon(profile.platform)} {profile.platform}
+                          {profile.platform}
                         </span>
                       ))}
                     </div>

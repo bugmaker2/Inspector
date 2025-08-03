@@ -2,16 +2,143 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* 自定义代码块样式 */
+.prose pre {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin: 1rem 0;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.prose pre code {
+  background: transparent !important;
+  color: inherit !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  font-size: inherit !important;
+  font-family: inherit !important;
+}
+
+.prose code {
+  background-color: #f3f4f6 !important;
+  color: #374151 !important;
+  padding: 0.125rem 0.25rem !important;
+  border-radius: 0.25rem !important;
+  font-size: 0.875rem !important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+}
+
+/* 响应式文本换行 */
+.break-words {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.break-all {
+  word-break: break-all;
+}
+
+/* 表格响应式优化 */
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.prose th,
+.prose td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+  word-wrap: break-word;
+  max-width: 200px;
+}
+
+.prose th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #374151;
+}
+
+/* 链接样式优化 */
+.prose a {
+  color: #2563eb;
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+.prose a:hover {
+  color: #1d4ed8;
+}
+
+/* 列表样式优化 */
+.prose ul,
+.prose ol {
+  padding-left: 1.5rem;
+  margin: 1rem 0;
+}
+
+.prose li {
+  margin: 0.25rem 0;
+  word-wrap: break-word;
+}
+
+/* 引用样式优化 */
+.prose blockquote {
+  border-left: 4px solid #d1d5db;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  color: #6b7280;
+  word-wrap: break-word;
+}
+
+/* 标题样式优化 */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  margin: 1.5rem 0 1rem 0;
+  word-wrap: break-word;
+  line-height: 1.25;
+}
+
+/* 段落样式优化 */
+.prose p {
+  margin: 1rem 0;
+  line-height: 1.6;
+  word-wrap: break-word;
+}
+
+/* 移动端优化 */
+@media (max-width: 640px) {
+  .prose {
+    font-size: 0.875rem;
+  }
+  
+  .prose pre {
+    font-size: 0.75rem;
+    padding: 0.75rem;
+  }
+  
+  .prose code {
+    font-size: 0.75rem;
+  }
+  
+  .prose table {
+    font-size: 0.75rem;
+  }
+  
+  .prose th,
+  .prose td {
+    padding: 0.5rem;
+    max-width: 150px;
+  }
 } 
