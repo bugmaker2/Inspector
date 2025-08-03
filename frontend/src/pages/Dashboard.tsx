@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { PlayIcon, DocumentTextIcon, UsersIcon, ChartBarIcon } from '@heroicons/react/24/outline';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { PlayIcon, DocumentTextIcon, UsersIcon, ChartBarIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { monitoringApi } from '../services/api';
 import { DashboardStats } from '../types';
 import toast from 'react-hot-toast';
@@ -8,6 +10,7 @@ const Dashboard: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [monitoringLoading, setMonitoringLoading] = useState(false);
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
 
   useEffect(() => {
     loadStats();
@@ -157,18 +160,144 @@ const Dashboard: React.FC = () => {
       {stats?.latest_summary && (
         <div className="bg-white shadow rounded-lg">
           <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">最新总结</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">最新总结</h3>
+              <button
+                onClick={() => setSummaryExpanded(!summaryExpanded)}
+                className="flex items-center text-sm text-gray-500 hover:text-gray-700"
+              >
+                {summaryExpanded ? (
+                  <>
+                    <span>收起</span>
+                    <ChevronUpIcon className="h-4 w-4 ml-1" />
+                  </>
+                ) : (
+                  <>
+                    <span>展开</span>
+                    <ChevronDownIcon className="h-4 w-4 ml-1" />
+                  </>
+                )}
+              </button>
+            </div>
             <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">{stats.latest_summary.title}</h4>
-              <p className="text-sm text-gray-600 mb-3">{stats.latest_summary.content}</p>
-              <div className="flex items-center text-xs text-gray-500">
-                <span>类型: {stats.latest_summary.summary_type}</span>
-                <span className="mx-2">•</span>
-                <span>成员: {stats.latest_summary.member_count}</span>
-                <span className="mx-2">•</span>
-                <span>活动: {stats.latest_summary.activity_count}</span>
-                <span className="mx-2">•</span>
-                <span>创建时间: {new Date(stats.latest_summary.created_at).toLocaleString()}</span>
+              <h4 className="text-sm font-medium text-gray-900 mb-3 break-words">{stats.latest_summary.title}</h4>
+              
+              <div className={`overflow-hidden transition-all duration-300 relative ${
+                summaryExpanded ? 'max-h-none' : 'max-h-32'
+              }`}>
+                <div className="prose prose-sm max-w-none prose-headings:break-words prose-p:break-words">
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      // 自定义代码块样式 - 改善文字显示
+                      code: ({ className, children, ...props }: any) => {
+                        const match = /language-(\w+)/.exec(className || '');
+                        const isInline = !match;
+                        return !isInline ? (
+                          <pre className="bg-gray-900 text-gray-100 p-3 rounded-lg overflow-x-auto text-xs font-mono leading-relaxed">
+                            <code className={className} {...props}>
+                              {children}
+                            </code>
+                          </pre>
+                        ) : (
+                          <code className="bg-gray-100 px-1 py-0.5 rounded text-xs font-mono text-gray-800" {...props}>
+                            {children}
+                          </code>
+                        );
+                      },
+                      // 自定义表格样式 - 添加响应式
+                      table: ({ children }: any) => (
+                        <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                          <table className="min-w-full divide-y divide-gray-200">
+                            {children}
+                          </table>
+                        </div>
+                      ),
+                      th: ({ children }: any) => (
+                        <th className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-700 uppercase tracking-wider break-words">
+                          {children}
+                        </th>
+                      ),
+                      td: ({ children }: any) => (
+                        <td className="px-3 py-2 text-xs text-gray-900 break-words">
+                          {children}
+                        </td>
+                      ),
+                      // 自定义列表样式
+                      ul: ({ children }: any) => (
+                        <ul className="list-disc list-inside space-y-1 break-words">
+                          {children}
+                        </ul>
+                      ),
+                      ol: ({ children }: any) => (
+                        <ol className="list-decimal list-inside space-y-1 break-words">
+                          {children}
+                        </ol>
+                      ),
+                      // 自定义标题样式 - 添加换行支持
+                      h1: ({ children }: any) => (
+                        <h1 className="text-lg font-bold text-gray-900 mt-4 mb-2 break-words">
+                          {children}
+                        </h1>
+                      ),
+                      h2: ({ children }: any) => (
+                        <h2 className="text-base font-semibold text-gray-900 mt-3 mb-2 break-words">
+                          {children}
+                        </h2>
+                      ),
+                      h3: ({ children }: any) => (
+                        <h3 className="text-sm font-medium text-gray-900 mt-3 mb-1 break-words">
+                          {children}
+                        </h3>
+                      ),
+                      // 自定义段落样式 - 添加换行支持
+                      p: ({ children }: any) => (
+                        <p className="text-sm text-gray-700 leading-relaxed break-words mb-2">
+                          {children}
+                        </p>
+                      ),
+                      // 自定义引用样式
+                      blockquote: ({ children }: any) => (
+                        <blockquote className="border-l-4 border-gray-300 pl-3 italic text-gray-600 my-2 break-words">
+                          {children}
+                        </blockquote>
+                      ),
+                      // 自定义链接样式
+                      a: ({ children, href }: any) => (
+                        <a 
+                          href={href} 
+                          className="text-blue-600 hover:text-blue-800 underline break-all text-xs"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {children}
+                        </a>
+                      ),
+                      // 自定义列表项样式
+                      li: ({ children }: any) => (
+                        <li className="break-words text-sm">
+                          {children}
+                        </li>
+                      ),
+                    }}
+                  >
+                    {stats.latest_summary.content}
+                  </ReactMarkdown>
+                </div>
+                
+                {!summaryExpanded && (
+                  <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-50 to-transparent pointer-events-none"></div>
+                )}
+              </div>
+              
+              <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 mt-3">
+                <span className="whitespace-nowrap">类型: {stats.latest_summary.summary_type}</span>
+                <span className="hidden sm:inline">•</span>
+                <span className="whitespace-nowrap">成员: {stats.latest_summary.member_count}</span>
+                <span className="hidden sm:inline">•</span>
+                <span className="whitespace-nowrap">活动: {stats.latest_summary.activity_count}</span>
+                <span className="hidden sm:inline">•</span>
+                <span className="whitespace-nowrap">创建时间: {new Date(stats.latest_summary.created_at).toLocaleString()}</span>
               </div>
             </div>
           </div>
