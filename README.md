@@ -448,9 +448,10 @@ docker-compose logs -f inspector
 本项目采用 Business Source License 1.1 (BSL) - 查看 [LICENSE](LICENSE) 文件了解详情
 
 **重要说明**：
-- 在 2026-01-01 之前，本软件受 BSL 许可证保护
+- 本软件受 BSL 许可证永久保护
 - 商业使用需要获得许可
-- 2026-01-01 后将转换为开源许可证
+- 禁止直接竞争的商业产品使用
+- 个人和非商业使用允许
 
 ## 🙏 致谢
 
