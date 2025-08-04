@@ -445,7 +445,12 @@ docker-compose logs -f inspector
 
 ## 📄 许可证
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
+本项目采用 Business Source License 1.1 (BSL) - 查看 [LICENSE](LICENSE) 文件了解详情
+
+**重要说明**：
+- 在 2026-01-01 之前，本软件受 BSL 许可证保护
+- 商业使用需要获得许可
+- 2026-01-01 后将转换为开源许可证
 
 ## 🙏 致谢
 
