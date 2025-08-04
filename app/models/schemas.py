@@ -118,17 +118,23 @@ class Summary(SummaryBase):
         from_attributes = True
 
 
-# Member with social profiles
+# Monitoring schemas
+class MonitoringResult(BaseModel):
+    status: str
+    new_activities: int
+    platform_results: Optional[dict] = None
+
+
+# Member schemas with relationships
 class MemberWithProfiles(Member):
     social_profiles: List[SocialProfile] = []
 
 
-# Member with activities
 class MemberWithActivities(Member):
     activities: List[Activity] = []
 
 
-# Dashboard response
+# Dashboard schemas
 class DashboardStats(BaseModel):
     total_members: int
     active_members: int
@@ -138,7 +144,7 @@ class DashboardStats(BaseModel):
     latest_summary: Optional[Summary] = None
 
 
-# Monitoring configuration
+# Configuration schemas
 class MonitoringConfig(BaseModel):
     monitoring_interval_minutes: int
     summary_frequency_hours: int

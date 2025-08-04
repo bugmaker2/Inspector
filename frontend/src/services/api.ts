@@ -118,11 +118,139 @@ export const monitoringApi = {
     return response.data;
   },
 
+  // 生成每日总结（流式）
+  generateDailySummaryStream: async (
+    date?: string,
+    onProgress?: (data: any) => void,
+    onComplete?: (summary: Summary) => void,
+    onError?: (error: string) => void,
+    onContentChunk?: (language: string, content: string) => void
+  ): Promise<void> => {
+    const params = date ? { date } : {};
+    const response = await fetch(`${API_BASE_URL}${API_PREFIX}/monitoring/generate-daily-summary-stream`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(params),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error('No response body');
+    }
+
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              onProgress?.(data);
+
+              // 处理内容片段
+              if (data.type === 'content_chunk' && data.language && data.content) {
+                onContentChunk?.(data.language, data.content);
+              }
+
+              if (data.type === 'complete' && data.summary) {
+                onComplete?.(data.summary);
+                return;
+              } else if (data.type === 'error') {
+                onError?.(data.message);
+                return;
+              }
+            } catch (e) {
+              console.error('Failed to parse SSE data:', e);
+            }
+          }
+        }
+      }
+    } finally {
+      reader.releaseLock();
+    }
+  },
+
   // 生成每周总结
   generateWeeklySummary: async (startDate?: string): Promise<Summary> => {
     const params = startDate ? { start_date: startDate } : {};
     const response = await api.post(`${API_PREFIX}/monitoring/generate-weekly-summary`, null, { params });
     return response.data;
+  },
+
+  // 生成每周总结（流式）
+  generateWeeklySummaryStream: async (
+    startDate?: string,
+    onProgress?: (data: any) => void,
+    onComplete?: (summary: Summary) => void,
+    onError?: (error: string) => void
+  ): Promise<void> => {
+    const params = startDate ? { start_date: startDate } : {};
+    const response = await fetch(`${API_BASE_URL}${API_PREFIX}/monitoring/generate-weekly-summary-stream`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(params),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error('No response body');
+    }
+
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              onProgress?.(data);
+
+              if (data.type === 'complete' && data.summary) {
+                onComplete?.(data.summary);
+                return;
+              } else if (data.type === 'error') {
+                onError?.(data.message);
+                return;
+              }
+            } catch (e) {
+              console.error('Failed to parse SSE data:', e);
+            }
+          }
+        }
+      }
+    } finally {
+      reader.releaseLock();
+    }
   },
 
   // 获取总结列表
@@ -137,9 +265,10 @@ export const monitoringApi = {
   },
 
   // 获取单个总结
-  getSummary: async (id: number, language?: string): Promise<Summary> => {  // 添加语言参数
-    const params = language ? { language } : {};
-    const response = await api.get(`${API_PREFIX}/monitoring/summaries/${id}`, { params });
+  getSummary: async (summaryId: number, language: string = "chinese"): Promise<Summary> => {
+    const response = await api.get(`${API_PREFIX}/monitoring/summaries/${summaryId}`, { 
+      params: { language } 
+    });
     return response.data;
   },
 };

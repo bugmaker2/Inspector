@@ -80,6 +80,7 @@ export interface Summary {
   id: number;
   title: string;
   content: string;
+  content_en?: string;  // 英文内容
   summary_type: string;
   start_date?: string;
   end_date?: string;

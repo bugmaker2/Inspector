@@ -1,11 +1,13 @@
 """LLM-based activity summarization service."""
 
 from datetime import datetime, timedelta
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Callable, AsyncGenerator
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from openai import OpenAI
 import httpx
+import asyncio
+import json
 from app.models.member import Activity, Summary, Member
 from app.core.config.settings import settings
 
@@ -367,6 +369,278 @@ Make it professional, well-structured, and easy to read with clear sections and 
         except Exception as e:
             print(f"Error generating {language} LLM summary: {e}")
             return None
+
+    async def _generate_language_content_stream(
+        self,
+        activity_data: List[Dict],
+        summary_type: str,
+        start_date: datetime,
+        end_date: datetime,
+        language: str,
+        progress_callback: Optional[Callable[[str, str], None]] = None
+    ) -> Optional[str]:
+        """Generate content in specific language with streaming support."""
+        date_range = f"{start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}"
+        
+        if language == "chinese":
+            system_prompt = "你是一位专业的社交媒体活动分析师。请为团队成员在各种平台上的活动创建简洁、信息丰富的总结报告。请用中文回答。"
+            prompt = f"""
+请为{date_range}期间的团队成员社交媒体活动创建{summary_type}总结报告。
+
+活动数据：
+{self._format_activity_data(activity_data)}
+
+请提供包含以下内容的综合总结：
+1. 整体活动概览和趋势
+2. 每位团队成员的关键亮点
+3. 平台特定洞察（LinkedIn、GitHub等）
+4. 值得注意的成就或里程碑
+5. 建议或观察
+
+**重要**：请使用Markdown格式，包含适当的标题、项目符号和格式。使用：
+- `#` 作为主标题
+- `##` 作为副标题
+- `###` 作为章节标题
+- `-` 作为项目符号
+- `**粗体**` 用于强调
+- `*斜体*` 用于次要强调
+- 使用 ``` 的代码块用于任何技术内容
+- 使用 | 的表格用于结构化数据
+
+使其专业、结构良好且易于阅读，具有清晰的章节和适当的Markdown格式。
+"""
+        else:  # english
+            system_prompt = "You are a professional social media activity analyst. Create concise, informative summaries of team member activities across various platforms."
+            prompt = f"""
+Please create a {summary_type} summary of team member social media activities for the period {date_range}.
+
+Activity Data:
+{self._format_activity_data(activity_data)}
+
+Please provide a comprehensive summary that includes:
+1. Overall activity overview and trends
+2. Key highlights from each team member
+3. Platform-specific insights (LinkedIn, GitHub, etc.)
+4. Notable achievements or milestones
+5. Recommendations or observations
+
+**IMPORTANT**: Format the summary in Markdown format with proper headings, bullet points, and formatting. Use:
+- `#` for main headings
+- `##` for subheadings
+- `###` for section headings
+- `-` for bullet points
+- `**bold**` for emphasis
+- `*italic*` for secondary emphasis
+- Code blocks with ``` for any technical content
+- Tables with | for structured data
+
+Make it professional, well-structured, and easy to read with clear sections and proper Markdown formatting.
+"""
+        
+        try:
+            if "dashscope.aliyuncs.com" in settings.openai_base_url:
+                # 阿里云通义千问 - 支持流式
+                headers = {
+                    "Authorization": f"Bearer {settings.openai_api_key}",
+                    "Content-Type": "application/json"
+                }
+                data = {
+                    "model": settings.openai_model,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt}
+                    ],
+                    "max_tokens": 2000,
+                    "temperature": 0.7,
+                    "stream": True
+                }
+                
+                content = ""
+                async with httpx.AsyncClient() as client:
+                    async with client.stream(
+                        "POST",
+                        settings.openai_base_url,
+                        headers=headers,
+                        json=data,
+                        timeout=60.0
+                    ) as response:
+                        if response.status_code == 200:
+                            async for line in response.aiter_lines():
+                                if line.startswith("data: "):
+                                    data_line = line[6:]
+                                    if data_line.strip() == "[DONE]":
+                                        break
+                                    try:
+                                        chunk = json.loads(data_line)
+                                        if "choices" in chunk and len(chunk["choices"]) > 0:
+                                            delta = chunk["choices"][0].get("delta", {})
+                                            if "content" in delta:
+                                                content += delta["content"]
+                                                # 实时回调内容更新
+                                                if progress_callback:
+                                                    progress_callback("content", delta["content"])
+
+                                    except json.JSONDecodeError:
+                                        continue
+                            return content
+                        else:
+                            print(f"Aliyun API error: {response.status_code}")
+                            return None
+            else:
+                # OpenAI - 支持流式
+                content = ""
+                stream = self.client.chat.completions.create(
+                    model=settings.openai_model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=2000,
+                    temperature=0.7,
+                    stream=True
+                )
+                
+                for chunk in stream:
+                    if chunk.choices[0].delta.content is not None:
+                        content += chunk.choices[0].delta.content
+                        # 实时回调内容更新
+                        if progress_callback:
+                            progress_callback("content", chunk.choices[0].delta.content)
+
+                
+                return content
+            
+        except Exception as e:
+            print(f"Error generating {language} LLM summary: {e}")
+            return None
+
+    async def _generate_language_content_stream_generator(
+        self,
+        activity_data: List[Dict],
+        summary_type: str,
+        start_date: datetime,
+        end_date: datetime,
+        language: str
+    ) -> AsyncGenerator[str, None]:
+        """Generate content in specific language with streaming generator."""
+        date_range = f"{start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}"
+        
+        if language == "chinese":
+            system_prompt = "你是一位专业的社交媒体活动分析师。请为团队成员在各种平台上的活动创建简洁、信息丰富的总结报告。请用中文回答。"
+            prompt = f"""
+请为{date_range}期间的团队成员社交媒体活动创建{summary_type}总结报告。
+
+活动数据：
+{self._format_activity_data(activity_data)}
+
+请提供包含以下内容的综合总结：
+1. 整体活动概览和趋势
+2. 每位团队成员的关键亮点
+3. 平台特定洞察（LinkedIn、GitHub等）
+4. 值得注意的成就或里程碑
+5. 建议或观察
+
+**重要**：请使用Markdown格式，包含适当的标题、项目符号和格式。使用：
+- `#` 作为主标题
+- `##` 作为副标题
+- `###` 作为章节标题
+- `-` 作为项目符号
+- `**粗体**` 用于强调
+- `*斜体*` 用于次要强调
+- 使用 ``` 的代码块用于任何技术内容
+- 使用 | 的表格用于结构化数据
+
+使其专业、结构良好且易于阅读，具有清晰的章节和适当的Markdown格式。
+"""
+        else:  # english
+            system_prompt = "You are a professional social media activity analyst. Create concise, informative summaries of team member activities across various platforms."
+            prompt = f"""
+Please create a {summary_type} summary of team member social media activities for the period {date_range}.
+
+Activity Data:
+{self._format_activity_data(activity_data)}
+
+Please provide a comprehensive summary that includes:
+1. Overall activity overview and trends
+2. Key highlights from each team member
+3. Platform-specific insights (LinkedIn, GitHub, etc.)
+4. Notable achievements or milestones
+5. Recommendations or observations
+
+**IMPORTANT**: Format the summary in Markdown format with proper headings, bullet points, and formatting. Use:
+- `#` for main headings
+- `##` for subheadings
+- `###` for section headings
+- `-` for bullet points
+- `**bold**` for emphasis
+- `*italic*` for secondary emphasis
+- Code blocks with ``` for any technical content
+- Tables with | for structured data
+
+Make it professional, well-structured, and easy to read with clear sections and proper Markdown formatting.
+"""
+        
+        try:
+            if "dashscope.aliyuncs.com" in settings.openai_base_url:
+                # 阿里云通义千问 - 支持流式
+                headers = {
+                    "Authorization": f"Bearer {settings.openai_api_key}",
+                    "Content-Type": "application/json"
+                }
+                data = {
+                    "model": settings.openai_model,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt}
+                    ],
+                    "max_tokens": 2000,
+                    "temperature": 0.7,
+                    "stream": True
+                }
+                
+                async with httpx.AsyncClient() as client:
+                    async with client.stream(
+                        "POST",
+                        settings.openai_base_url,
+                        headers=headers,
+                        json=data,
+                        timeout=60.0
+                    ) as response:
+                        if response.status_code == 200:
+                            async for line in response.aiter_lines():
+                                if line.startswith("data: "):
+                                    data_line = line[6:]
+                                    if data_line.strip() == "[DONE]":
+                                        break
+                                    try:
+                                        chunk = json.loads(data_line)
+                                        if "choices" in chunk and len(chunk["choices"]) > 0:
+                                            delta = chunk["choices"][0].get("delta", {})
+                                            if "content" in delta:
+                                                yield delta["content"]
+                                    except json.JSONDecodeError:
+                                        continue
+                        else:
+                            yield f"Error: API returned status {response.status_code}"
+            else:
+                # OpenAI - 支持流式
+                stream = self.client.chat.completions.create(
+                    model=settings.openai_model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=2000,
+                    temperature=0.7,
+                    stream=True
+                )
+                
+                for chunk in stream:
+                    if chunk.choices[0].delta.content is not None:
+                        yield chunk.choices[0].delta.content
+            
+        except Exception as e:
+            yield f"Error generating {language} LLM summary: {e}"
     
     def _format_activity_data(self, activity_data: List[Dict]) -> str:
         """Format activity data for LLM prompt."""

@@ -44,8 +44,23 @@ const Dashboard: React.FC = () => {
 
   const generateDailySummary = async () => {
     try {
-      await monitoringApi.generateDailySummary();
-      toast.success('每日总结生成成功！');
+      await monitoringApi.generateDailySummaryStream(
+        undefined, // date
+        (data) => {
+          // 进度回调 - 可以在这里添加进度显示
+          if (data.type === 'progress') {
+            console.log(`生成进度: ${data.progress}% - ${data.message}`);
+          }
+        },
+        (summary) => {
+          // 完成回调
+          toast.success('每日总结生成成功！');
+        },
+        (error) => {
+          // 错误回调
+          toast.error(`生成总结失败: ${error}`);
+        }
+      );
     } catch (error) {
       toast.error('生成总结失败');
       console.error('Failed to generate summary:', error);

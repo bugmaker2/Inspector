@@ -246,42 +246,39 @@ async def generate_daily_summary_stream(
                 
                 # 生成中文内容
                 yield f"data: {json.dumps({'type': 'progress', 'message': '正在生成中文总结...', 'progress': 30})}\n\n"
-                yield f"data: {json.dumps({'type': 'content_start', 'language': 'chinese'})}\n\n"
                 
-                activity_data = prepare_activity_data_for_llm(activities, db)
+                activity_data = [
+                    {
+                        "member_name": activity.member.name if activity.member else "Unknown",
+                        "platform": activity.platform,
+                        "content": activity.content,
+                        "url": activity.url,
+                        "created_at": activity.created_at.isoformat()
+                    }
+                    for activity in activities
+                ]
                 
-                # 使用生成器来获取流式内容
-                chinese_content = ""
-                async for chunk in summarizer._generate_language_content_stream_generator(
+                chinese_content = await summarizer._generate_language_content_stream(
                     activity_data, "daily", start_date, end_date, "chinese"
-                ):
-                    chinese_content += chunk
-                    yield f"data: {json.dumps({'type': 'content_chunk', 'language': 'chinese', 'content': chunk})}\n\n"
+                )
                 
                 if not chinese_content:
                     yield f"data: {json.dumps({'type': 'error', 'message': '中文总结生成失败'})}\n\n"
                     return
                 
-                yield f"data: {json.dumps({'type': 'content_end', 'language': 'chinese'})}\n\n"
                 yield f"data: {json.dumps({'type': 'progress', 'message': '中文总结生成完成', 'progress': 60})}\n\n"
                 
                 # 生成英文内容
                 yield f"data: {json.dumps({'type': 'progress', 'message': '正在生成英文总结...', 'progress': 70})}\n\n"
-                yield f"data: {json.dumps({'type': 'content_start', 'language': 'english'})}\n\n"
                 
-                # 使用生成器来获取流式内容
-                english_content = ""
-                async for chunk in summarizer._generate_language_content_stream_generator(
+                english_content = await summarizer._generate_language_content_stream(
                     activity_data, "daily", start_date, end_date, "english"
-                ):
-                    english_content += chunk
-                    yield f"data: {json.dumps({'type': 'content_chunk', 'language': 'english', 'content': chunk})}\n\n"
+                )
                 
                 if not english_content:
                     yield f"data: {json.dumps({'type': 'error', 'message': '英文总结生成失败'})}\n\n"
                     return
                 
-                yield f"data: {json.dumps({'type': 'content_end', 'language': 'english'})}\n\n"
                 yield f"data: {json.dumps({'type': 'progress', 'message': '英文总结生成完成', 'progress': 90})}\n\n"
                 
                 # 保存到数据库
@@ -305,18 +302,7 @@ async def generate_daily_summary_stream(
                 yield f"data: {json.dumps({'type': 'progress', 'message': '总结保存完成', 'progress': 100})}\n\n"
                 
                 # 发送完成信号和结果
-                summary_dict = SummarySchema.from_orm(summary).dict()
-                # 确保datetime字段被正确序列化
-                if summary_dict.get('start_date'):
-                    summary_dict['start_date'] = summary_dict['start_date'].isoformat()
-                if summary_dict.get('end_date'):
-                    summary_dict['end_date'] = summary_dict['end_date'].isoformat()
-                if summary_dict.get('created_at'):
-                    summary_dict['created_at'] = summary_dict['created_at'].isoformat()
-                if summary_dict.get('sent_at'):
-                    summary_dict['sent_at'] = summary_dict['sent_at'].isoformat()
-                
-                yield f"data: {json.dumps({'type': 'complete', 'summary': summary_dict})}\n\n"
+                yield f"data: {json.dumps({'type': 'complete', 'summary': SummarySchema.from_orm(summary).dict()})}\n\n"
                 
             except Exception as e:
                 yield f"data: {json.dumps({'type': 'error', 'message': f'生成失败: {str(e)}'})}\n\n"
@@ -440,7 +426,16 @@ async def generate_weekly_summary_stream(
                 # 生成中文内容
                 yield f"data: {json.dumps({'type': 'progress', 'message': '正在生成中文总结...', 'progress': 30})}\n\n"
                 
-                activity_data = prepare_activity_data_for_llm(activities, db)
+                activity_data = [
+                    {
+                        "member_name": activity.member.name if activity.member else "Unknown",
+                        "platform": activity.platform,
+                        "content": activity.content,
+                        "url": activity.url,
+                        "created_at": activity.created_at.isoformat()
+                    }
+                    for activity in activities
+                ]
                 
                 chinese_content = await summarizer._generate_language_content_stream(
                     activity_data, "weekly", start_datetime, end_datetime, "chinese"
