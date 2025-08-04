@@ -7,11 +7,12 @@ from datetime import datetime
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.orm import Session
 
 from app.core.config.settings import settings
 from app.core.database.database import engine, Base
-from app.api.v1 import members, monitoring
+from app.api.v1 import members, monitoring, auth
 from app.services.monitors.monitor_manager import MonitorManager
 from app.services.summarizers.llm_summarizer import LLMSummarizer
 from app.core.database.database import SessionLocal
@@ -54,6 +55,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add session middleware
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.secret_key,
+    max_age=1209600,  # 14 days
+    same_site="lax",
+    https_only=False,  # 开发环境设为False
+    domain=None  # 允许跨子域名共享cookie
+)
+
 # Include API routers
 app.include_router(
     members.router,
@@ -65,6 +76,12 @@ app.include_router(
     monitoring.router,
     prefix=f"{settings.api_prefix}/monitoring",
     tags=["monitoring"]
+)
+
+app.include_router(
+    auth.router,
+    prefix=f"{settings.api_prefix}",
+    tags=["authentication"]
 )
 
 

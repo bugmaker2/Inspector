@@ -55,7 +55,19 @@ class Settings(BaseSettings):
         default=None, description="LinkedIn password for scraping"
     )
     github_token: Optional[str] = Field(
-        default=None, description="GitHub personal access token"
+        default=None, description="GitHub personal access token (legacy)"
+    )
+    
+    # GitHub OAuth Configuration
+    github_client_id: Optional[str] = Field(
+        default=None, description="GitHub OAuth client ID"
+    )
+    github_client_secret: Optional[str] = Field(
+        default=None, description="GitHub OAuth client secret"
+    )
+    github_redirect_uri: str = Field(
+        default="http://localhost:8000/api/v1/auth/github/callback",
+        description="GitHub OAuth redirect URI"
     )
     
     # Notification
