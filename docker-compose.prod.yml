@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  inspector:
+    build: .
+    environment:
+      - DATABASE_URL=postgresql://inspector:${DB_PASSWORD}@db:5432/inspector
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - LOG_LEVEL=INFO
+      - ENVIRONMENT=production
+    env_file:
+      - .env
+    depends_on:
+      - db
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - inspector-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  inspector-frontend:
+    build: ./frontend
+    depends_on:
+      - inspector
+    restart: unless-stopped
+    networks:
+      - inspector-network
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=inspector
+      - POSTGRES_USER=inspector
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - inspector-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U inspector"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - inspector
+      - inspector-frontend
+    restart: unless-stopped
+    networks:
+      - inspector-network
+
+volumes:
+  postgres_data:
+
+networks:
+  inspector-network:
+    driver: bridge
