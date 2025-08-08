@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PlusIcon, TrashIcon, EyeIcon, PencilIcon } from '@heroicons/react/24/outline';
-import { membersApi, socialProfilesApi } from '../services/api';
+import { membersApi } from '../services/api';
 import { Member, MemberCreate, SocialProfileCreate, SocialProfile } from '../types';
 import toast from 'react-hot-toast';
 
@@ -30,8 +30,8 @@ const Members: React.FC = () => {
 
   const loadMembers = async () => {
     try {
-      const data = await membersApi.getAll({ active_only: false });
-      setMembers(data);
+      const response = await membersApi.getAll();
+      setMembers(response.data);
     } catch (error) {
       toast.error('加载成员列表失败');
       console.error('Failed to load members:', error);
@@ -42,8 +42,8 @@ const Members: React.FC = () => {
 
   const loadMemberProfiles = async (memberId: number) => {
     try {
-      const profiles = await socialProfilesApi.getByMemberId(memberId);
-      setMemberProfiles(profiles);
+      const response = await membersApi.getSocialProfiles(memberId);
+      setMemberProfiles(response.data);
     } catch (error) {
       toast.error('加载社交配置失败');
       console.error('Failed to load member profiles:', error);
@@ -75,7 +75,7 @@ const Members: React.FC = () => {
     if (!selectedMember) return;
     
     try {
-      await socialProfilesApi.create(selectedMember.id, profileFormData);
+      await membersApi.addSocialProfile(selectedMember.id, profileFormData);
       toast.success('社交配置添加成功');
       setShowProfileModal(false);
       setProfileFormData({ platform: '', profile_url: '', username: '' });
@@ -107,7 +107,7 @@ const Members: React.FC = () => {
     if (!window.confirm('确定要删除这个社交配置吗？')) return;
     
     try {
-      await socialProfilesApi.delete(memberId, profileId);
+      await membersApi.deleteSocialProfile(memberId, profileId);
       toast.success('社交配置删除成功');
       await loadMemberProfiles(memberId);
       loadMembers();

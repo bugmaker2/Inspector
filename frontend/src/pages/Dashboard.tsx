@@ -1,392 +1,334 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { PlayIcon, DocumentTextIcon, UsersIcon, ChartBarIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
-import { monitoringApi } from '../services/api';
-import { DashboardStats } from '../types';
+import { 
+  ChartBarIcon, 
+  UsersIcon, 
+  DocumentTextIcon, 
+  ClockIcon,
+  ArrowDownTrayIcon,
+  BellIcon
+} from '@heroicons/react/24/outline';
+import { monitoringApi, exportApi, notificationsApi, downloadFile } from '../services/api';
+import { DashboardStats, Summary, Notification } from '../types';
 import toast from 'react-hot-toast';
 
 const Dashboard: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [latestSummary, setLatestSummary] = useState<Summary | null>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
-  const [monitoringLoading, setMonitoringLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [summaryExpanded, setSummaryExpanded] = useState(false);
 
   useEffect(() => {
-    loadStats();
+    loadDashboardData();
+    loadNotifications();
   }, []);
 
-  const loadStats = async () => {
+  const loadDashboardData = async () => {
     try {
-      const data = await monitoringApi.getStats();
-      setStats(data);
+      const [statsResponse, summariesResponse] = await Promise.all([
+        monitoringApi.getStats(),
+        monitoringApi.getSummaries()
+      ]);
+      
+      setStats(statsResponse.data);
+      if (summariesResponse.data.length > 0) {
+        setLatestSummary(summariesResponse.data[0]);
+      }
     } catch (error) {
-      toast.error('加载统计数据失败');
-      console.error('Failed to load stats:', error);
+      console.error('Failed to load dashboard data:', error);
+      toast.error('加载仪表板数据失败');
     } finally {
       setLoading(false);
     }
   };
 
-  const runMonitoring = async () => {
-    setMonitoringLoading(true);
+  const loadNotifications = async () => {
     try {
-      const result = await monitoringApi.runMonitoring();
-      toast.success(`监控完成！发现 ${result.new_activities} 个新活动`);
-      loadStats(); // 重新加载统计数据
+      const response = await notificationsApi.getAll(5, true);
+      setNotifications(response.data);
     } catch (error) {
-      toast.error('运行监控失败');
-      console.error('Failed to run monitoring:', error);
-    } finally {
-      setMonitoringLoading(false);
+      console.error('Failed to load notifications:', error);
     }
   };
 
-  const generateDailySummary = async () => {
+  const handleRunMonitoring = async () => {
     try {
-      await monitoringApi.generateDailySummaryStream(
-        undefined, // date
-        (data) => {
-          // 进度回调 - 可以在这里添加进度显示
-          if (data.type === 'progress') {
-            console.log(`生成进度: ${data.progress}% - ${data.message}`);
-          }
-        },
-        (summary) => {
-          // 完成回调
-          toast.success('每日总结生成成功！');
-        },
-        (error) => {
-          // 错误回调
-          toast.error(`生成总结失败: ${error}`);
-        }
-      );
+      await monitoringApi.runMonitoring();
+      toast.success('监控任务已启动');
+      loadDashboardData();
     } catch (error) {
-      toast.error('生成总结失败');
+      console.error('Failed to run monitoring:', error);
+      toast.error('启动监控失败');
+    }
+  };
+
+  const handleGenerateSummary = async () => {
+    try {
+      await monitoringApi.generateDailySummary();
+      toast.success('总结生成任务已启动');
+      loadDashboardData();
+    } catch (error) {
       console.error('Failed to generate summary:', error);
+      toast.error('生成总结失败');
+    }
+  };
+
+  const handleExport = async (type: string) => {
+    setExporting(true);
+    try {
+      let response;
+      let filename;
+      
+      switch (type) {
+        case 'activities-csv':
+          response = await exportApi.exportActivitiesCsv();
+          filename = `activities_${new Date().toISOString().split('T')[0]}.csv`;
+          break;
+        case 'activities-excel':
+          response = await exportApi.exportActivitiesExcel();
+          filename = `activities_${new Date().toISOString().split('T')[0]}.xlsx`;
+          break;
+        case 'summaries-pdf':
+          response = await exportApi.exportSummariesPdf();
+          filename = `summaries_${new Date().toISOString().split('T')[0]}.pdf`;
+          break;
+        case 'members-json':
+          response = await exportApi.exportMembersJson();
+          filename = `members_${new Date().toISOString().split('T')[0]}.json`;
+          break;
+        case 'dashboard-stats':
+          response = await exportApi.exportDashboardStats();
+          filename = `dashboard_stats_${new Date().toISOString().split('T')[0]}.json`;
+          break;
+        default:
+          throw new Error('Unknown export type');
+      }
+      
+      downloadFile(response.data, filename);
+      toast.success('导出成功');
+    } catch (error) {
+      console.error('Export failed:', error);
+      toast.error('导出失败');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const markNotificationAsRead = async (id: number) => {
+    try {
+      await notificationsApi.markAsRead(id);
+      loadNotifications();
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
     }
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 break-words">仪表板</h1>
-          <p className="text-gray-600 break-words">监控团队成员社交动态的概览</p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <button
-            onClick={runMonitoring}
-            disabled={monitoringLoading}
-            className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
-          >
-            <PlayIcon className="h-4 w-4 mr-2" />
-            <span className="whitespace-nowrap">{monitoringLoading ? '监控中...' : '运行监控'}</span>
+      {/* 页面标题 */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">仪表板</h1>
+        
+        {/* 通知图标 */}
+        <div className="relative">
+          <button className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
+            <BellIcon className="h-6 w-6" />
+            {notifications.length > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {notifications.length}
+              </span>
+            )}
           </button>
+        </div>
+      </div>
+
+      {/* 统计卡片 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <div className="flex items-center">
+            <UsersIcon className="h-8 w-8 text-blue-600" />
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">总成员数</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.total_members || 0}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <div className="flex items-center">
+            <ChartBarIcon className="h-8 w-8 text-green-600" />
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">今日活动</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.activities_today || 0}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <div className="flex items-center">
+            <ClockIcon className="h-8 w-8 text-yellow-600" />
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">本周活动</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.activities_this_week || 0}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <div className="flex items-center">
+            <DocumentTextIcon className="h-8 w-8 text-purple-600" />
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">总活动数</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.total_activities || 0}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 快速操作 */}
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">快速操作</h2>
+        <div className="flex flex-wrap gap-4">
           <button
-            onClick={generateDailySummary}
-            className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            onClick={handleRunMonitoring}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <ChartBarIcon className="h-4 w-4 mr-2" />
+            运行监控
+          </button>
+          
+          <button
+            onClick={handleGenerateSummary}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
           >
             <DocumentTextIcon className="h-4 w-4 mr-2" />
-            <span className="whitespace-nowrap">生成总结</span>
+            生成总结
           </button>
         </div>
       </div>
 
-      {/* Stats Grid */}
-      {stats && (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <UsersIcon className="h-6 w-6 text-gray-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">总成员数</dt>
-                    <dd className="text-lg font-medium text-gray-900">{stats.total_members}</dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <ChartBarIcon className="h-6 w-6 text-gray-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">总活动数</dt>
-                    <dd className="text-lg font-medium text-gray-900">{stats.total_activities}</dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <ChartBarIcon className="h-6 w-6 text-green-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">今日活动</dt>
-                    <dd className="text-lg font-medium text-gray-900">{stats.activities_today}</dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <ChartBarIcon className="h-6 w-6 text-blue-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">本周活动</dt>
-                    <dd className="text-lg font-medium text-gray-900">{stats.activities_this_week}</dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
+      {/* 导出功能 */}
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">数据导出</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <button
+            onClick={() => handleExport('activities-csv')}
+            disabled={exporting}
+            className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+          >
+            <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+            导出活动 (CSV)
+          </button>
+          
+          <button
+            onClick={() => handleExport('activities-excel')}
+            disabled={exporting}
+            className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+          >
+            <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+            导出活动 (Excel)
+          </button>
+          
+          <button
+            onClick={() => handleExport('summaries-pdf')}
+            disabled={exporting}
+            className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+          >
+            <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+            导出总结 (PDF)
+          </button>
+          
+          <button
+            onClick={() => handleExport('members-json')}
+            disabled={exporting}
+            className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+          >
+            <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+            导出成员 (JSON)
+          </button>
+          
+          <button
+            onClick={() => handleExport('dashboard-stats')}
+            disabled={exporting}
+            className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+          >
+            <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+            导出统计 (JSON)
+          </button>
         </div>
-      )}
-
-      {/* Latest Summary */}
-      {stats?.latest_summary && (
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">最新总结</h3>
-              <button
-                onClick={() => setSummaryExpanded(!summaryExpanded)}
-                className="flex items-center text-sm text-gray-500 hover:text-gray-700"
-              >
-                {summaryExpanded ? (
-                  <>
-                    <span>收起</span>
-                    <ChevronUpIcon className="h-4 w-4 ml-1" />
-                  </>
-                ) : (
-                  <>
-                    <span>展开</span>
-                    <ChevronDownIcon className="h-4 w-4 ml-1" />
-                  </>
-                )}
-              </button>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-3 break-words">{stats.latest_summary.title}</h4>
-              
-              <div className={`overflow-hidden transition-all duration-300 relative ${
-                summaryExpanded ? 'max-h-none' : 'max-h-32'
-              }`}>
-                <div className="prose prose-sm max-w-none prose-headings:break-words prose-p:break-words">
-                  <ReactMarkdown 
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                      // 自定义代码块样式 - 改善文字显示
-                      code: ({ className, children, ...props }: any) => {
-                        const match = /language-(\w+)/.exec(className || '');
-                        const isInline = !match;
-                        return !isInline ? (
-                          <pre className="bg-gray-900 text-gray-100 p-3 rounded-lg overflow-x-auto text-xs font-mono leading-relaxed">
-                            <code className={className} {...props}>
-                              {children}
-                            </code>
-                          </pre>
-                        ) : (
-                          <code className="bg-gray-100 px-1 py-0.5 rounded text-xs font-mono text-gray-800" {...props}>
-                            {children}
-                          </code>
-                        );
-                      },
-                      // 自定义表格样式 - 添加响应式
-                      table: ({ children }: any) => (
-                        <div className="overflow-x-auto border border-gray-200 rounded-lg">
-                          <table className="min-w-full divide-y divide-gray-200">
-                            {children}
-                          </table>
-                        </div>
-                      ),
-                      th: ({ children }: any) => (
-                        <th className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-700 uppercase tracking-wider break-words">
-                          {children}
-                        </th>
-                      ),
-                      td: ({ children }: any) => (
-                        <td className="px-3 py-2 text-xs text-gray-900 break-words">
-                          {children}
-                        </td>
-                      ),
-                      // 自定义列表样式
-                      ul: ({ children }: any) => (
-                        <ul className="list-disc list-inside space-y-1 break-words">
-                          {children}
-                        </ul>
-                      ),
-                      ol: ({ children }: any) => (
-                        <ol className="list-decimal list-inside space-y-1 break-words">
-                          {children}
-                        </ol>
-                      ),
-                      // 自定义标题样式 - 添加换行支持
-                      h1: ({ children }: any) => (
-                        <h1 className="text-lg font-bold text-gray-900 mt-4 mb-2 break-words">
-                          {children}
-                        </h1>
-                      ),
-                      h2: ({ children }: any) => (
-                        <h2 className="text-base font-semibold text-gray-900 mt-3 mb-2 break-words">
-                          {children}
-                        </h2>
-                      ),
-                      h3: ({ children }: any) => (
-                        <h3 className="text-sm font-medium text-gray-900 mt-3 mb-1 break-words">
-                          {children}
-                        </h3>
-                      ),
-                      // 自定义段落样式 - 添加换行支持
-                      p: ({ children }: any) => (
-                        <p className="text-sm text-gray-700 leading-relaxed break-words mb-2">
-                          {children}
-                        </p>
-                      ),
-                      // 自定义引用样式
-                      blockquote: ({ children }: any) => (
-                        <blockquote className="border-l-4 border-gray-300 pl-3 italic text-gray-600 my-2 break-words">
-                          {children}
-                        </blockquote>
-                      ),
-                      // 自定义链接样式
-                      a: ({ children, href }: any) => (
-                        <a 
-                          href={href} 
-                          className="text-blue-600 hover:text-blue-800 underline break-all text-xs"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {children}
-                        </a>
-                      ),
-                      // 自定义列表项样式
-                      li: ({ children }: any) => (
-                        <li className="break-words text-sm">
-                          {children}
-                        </li>
-                      ),
-                    }}
-                  >
-                    {stats.latest_summary.content}
-                  </ReactMarkdown>
-                </div>
-                
-                {!summaryExpanded && (
-                  <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-50 to-transparent pointer-events-none"></div>
-                )}
-              </div>
-              
-              <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 mt-3">
-                <span className="whitespace-nowrap">类型: {stats.latest_summary.summary_type}</span>
-                <span className="hidden sm:inline">•</span>
-                <span className="whitespace-nowrap">成员: {stats.latest_summary.member_count}</span>
-                <span className="hidden sm:inline">•</span>
-                <span className="whitespace-nowrap">活动: {stats.latest_summary.activity_count}</span>
-                <span className="hidden sm:inline">•</span>
-                <span className="whitespace-nowrap">创建时间: {new Date(stats.latest_summary.created_at).toLocaleString()}</span>
-              </div>
-            </div>
+        {exporting && (
+          <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+            正在导出，请稍候...
           </div>
-        </div>
-      )}
-
-      {/* Quick Actions */}
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">快速操作</h3>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <button
-              onClick={runMonitoring}
-              disabled={monitoringLoading}
-              className="relative group bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary-500 rounded-lg border border-gray-200 hover:border-gray-300"
-            >
-              <div>
-                <span className="rounded-lg inline-flex p-3 bg-primary-50 text-primary-700 ring-4 ring-white">
-                  <PlayIcon className="h-6 w-6" />
-                </span>
-              </div>
-              <div className="mt-8">
-                <h3 className="text-lg font-medium">
-                  <span className="absolute inset-0" aria-hidden="true" />
-                  运行监控
-                </h3>
-                <p className="mt-2 text-sm text-gray-500">
-                  立即检查所有社交配置的最新动态
-                </p>
-              </div>
-            </button>
-
-            <button
-              onClick={generateDailySummary}
-              className="relative group bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary-500 rounded-lg border border-gray-200 hover:border-gray-300"
-            >
-              <div>
-                <span className="rounded-lg inline-flex p-3 bg-green-50 text-green-700 ring-4 ring-white">
-                  <DocumentTextIcon className="h-6 w-6" />
-                </span>
-              </div>
-              <div className="mt-8">
-                <h3 className="text-lg font-medium">
-                  <span className="absolute inset-0" aria-hidden="true" />
-                  生成总结
-                </h3>
-                <p className="mt-2 text-sm text-gray-500">
-                  使用AI生成今日活动总结报告
-                </p>
-              </div>
-            </button>
-
-            <a
-              href="/members"
-              className="relative group bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary-500 rounded-lg border border-gray-200 hover:border-gray-300"
-            >
-              <div>
-                <span className="rounded-lg inline-flex p-3 bg-blue-50 text-blue-700 ring-4 ring-white">
-                  <UsersIcon className="h-6 w-6" />
-                </span>
-              </div>
-              <div className="mt-8">
-                <h3 className="text-lg font-medium">
-                  <span className="absolute inset-0" aria-hidden="true" />
-                  管理成员
-                </h3>
-                <p className="mt-2 text-sm text-gray-500">
-                  添加或编辑团队成员信息
-                </p>
-              </div>
-            </a>
-          </div>
-        </div>
+        )}
       </div>
+
+      {/* 最新总结 */}
+      {latestSummary && (
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">最新总结</h2>
+          <div className="space-y-2">
+            <h3 className="font-medium text-gray-900 dark:text-white">{latestSummary.title}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              类型: {latestSummary.summary_type} | 
+              成员数: {latestSummary.member_count} | 
+              活动数: {latestSummary.activity_count}
+            </p>
+            <p className="text-gray-700 dark:text-gray-300 text-sm line-clamp-3">
+              {latestSummary.content}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* 通知列表 */}
+      {notifications.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">最新通知</h2>
+          <div className="space-y-3">
+            {notifications.map((notification) => (
+              <div
+                key={notification.id}
+                className={`p-3 rounded-lg border-l-4 ${
+                  notification.type === 'error' ? 'border-red-500 bg-red-50 dark:bg-red-900/20' :
+                  notification.type === 'warning' ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' :
+                  notification.type === 'success' ? 'border-green-500 bg-green-50 dark:bg-green-900/20' :
+                  'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                }`}
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">{notification.title}</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{notification.message}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                      {new Date(notification.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                  {!notification.read && (
+                    <button
+                      onClick={() => markNotificationAsRead(notification.id)}
+                      className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                    >
+                      标记已读
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

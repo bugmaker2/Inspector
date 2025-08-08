@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     api_port: int = Field(default=8000, description="API port")
     api_prefix: str = Field(default="/api/v1", description="API prefix")
     
+    # Debug and Development
+    debug: bool = Field(default=False, description="Enable debug mode")
+    
     # Security
     secret_key: str = Field(
         default="your-secret-key-change-in-production",
@@ -46,6 +49,9 @@ class Settings(BaseSettings):
     summary_frequency_hours: int = Field(
         default=24, description="How often to generate summaries in hours"
     )
+    summary_time: str = Field(
+        default="09:00", description="Time to generate summaries (HH:MM)"
+    )
     
     # Social Media APIs
     linkedin_username: Optional[str] = Field(
@@ -55,19 +61,7 @@ class Settings(BaseSettings):
         default=None, description="LinkedIn password for scraping"
     )
     github_token: Optional[str] = Field(
-        default=None, description="GitHub personal access token (legacy)"
-    )
-    
-    # GitHub OAuth Configuration
-    github_client_id: Optional[str] = Field(
-        default=None, description="GitHub OAuth client ID"
-    )
-    github_client_secret: Optional[str] = Field(
-        default=None, description="GitHub OAuth client secret"
-    )
-    github_redirect_uri: str = Field(
-        default="http://localhost:8000/api/v1/auth/github/callback",
-        description="GitHub OAuth redirect URI"
+        default=None, description="GitHub personal access token"
     )
     
     # Notification

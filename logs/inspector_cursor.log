@@ -1,0 +1,54 @@
+2025-08-08 12:54:08,308 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-08 12:54:08,308 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-08 12:54:08,308 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-08 12:54:59,879 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-08 12:54:59,879 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-08 12:54:59,879 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-08 12:56:30,412 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-08 12:56:30,412 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-08 12:56:30,412 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-08 12:57:16,325 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-08 12:57:16,326 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-08 12:57:16,326 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-08 13:10:18,308 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-08 13:10:18,308 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-08 13:10:18,308 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-08 13:10:22,787 - app.core.database.database - ERROR - Database health check failed: Not an executable object: 'SELECT 1'
+2025-08-08 13:10:25,052 - app.core.database.database - ERROR - Database health check failed: Not an executable object: 'SELECT 1'
+2025-08-08 13:10:32,247 - app.core.database.database - ERROR - Database health check failed: Not an executable object: 'SELECT 1'
+2025-08-08 13:11:02,050 - app.core.database.database - ERROR - Database health check failed: Not an executable object: 'SELECT 1'
+2025-08-08 13:11:09,021 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-08 13:11:09,021 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-08 13:11:09,021 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-08 13:11:13,495 - app.core.database.database - ERROR - Database health check failed: Not an executable object: 'SELECT 1'
+2025-08-08 13:11:49,122 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-08 13:11:49,122 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-08 13:11:49,122 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-08 13:11:52,748 - app.core.database.database - ERROR - Database health check failed: Not an executable object: 'SELECT 1'
+2025-08-08 13:12:08,804 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-08 13:12:08,804 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-08 13:12:08,804 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-08 13:12:11,844 - app.core.database.database - ERROR - Database health check failed: Not an executable object: 'SELECT 1'
+2025-08-08 13:12:52,218 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-08 13:12:52,218 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-08 13:12:52,218 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-08 13:12:57,489 - app.core.database.database - ERROR - Database health check failed: Not an executable object: 'SELECT 1'
+2025-08-08 13:13:23,926 - app.core.database.database - ERROR - Database health check failed: Not an executable object: 'SELECT 1'
+2025-08-08 13:13:38,353 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-08 13:13:38,353 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-08 13:13:38,353 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-08 13:13:54,471 - app.core.database.database - ERROR - Unexpected error: 500: Export failed: 'Activity' object has no attribute 'type'
+2025-08-08 13:14:21,098 - app.core.database.database - ERROR - Unexpected error: 500: Export failed: 'Activity' object has no attribute 'type'
+2025-08-08 13:14:30,240 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-08 13:14:30,240 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-08 13:14:30,240 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-08 13:15:55,730 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-08 13:15:55,731 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-08 13:15:55,731 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-08 13:29:52,606 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-08 13:29:52,606 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-08 13:29:52,607 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-08 13:30:13,191 - httpx - INFO - HTTP Request: GET https://api.github.com/users/bugmaker2/events "HTTP/1.1 401 Unauthorized"
+2025-08-08 13:32:36,115 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-08 13:32:36,115 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-08 13:32:36,115 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs

@@ -5,16 +5,20 @@ export interface ApiResponse<T> {
   status: string;
 }
 
-// 成员相关类型
-export interface Member {
+// 基础类型
+export interface BaseEntity {
   id: number;
+  created_at: string;
+  updated_at?: string;
+}
+
+// 成员相关类型
+export interface Member extends BaseEntity {
   name: string;
   email: string;
   position?: string;
   department?: string;
   is_active: boolean;
-  created_at: string;
-  updated_at: string;
   social_profiles?: SocialProfile[];
   activities?: Activity[];
 }
@@ -26,25 +30,20 @@ export interface MemberCreate {
   department?: string;
 }
 
-export interface MemberUpdate {
-  name?: string;
-  email?: string;
-  position?: string;
-  department?: string;
+export interface MemberUpdate extends Partial<MemberCreate> {
   is_active?: boolean;
 }
 
 // 社交配置相关类型
-export interface SocialProfile {
-  id: number;
+export interface SocialProfile extends BaseEntity {
   member_id: number;
   platform: string;
   profile_url: string;
   username?: string;
   is_active: boolean;
   last_checked?: string;
-  created_at: string;
-  updated_at: string;
+  member?: Member;
+  activities?: Activity[];
 }
 
 export interface SocialProfileCreate {
@@ -53,15 +52,12 @@ export interface SocialProfileCreate {
   username?: string;
 }
 
-export interface SocialProfileUpdate {
-  profile_url?: string;
-  username?: string;
+export interface SocialProfileUpdate extends Partial<SocialProfileCreate> {
   is_active?: boolean;
 }
 
 // 活动相关类型
-export interface Activity {
-  id: number;
+export interface Activity extends BaseEntity {
   member_id: number;
   social_profile_id: number;
   platform: string;
@@ -72,26 +68,31 @@ export interface Activity {
   external_id?: string;
   published_at?: string;
   is_processed: boolean;
-  created_at: string;
+  member?: Member;
+  social_profile?: SocialProfile;
 }
 
 // 总结相关类型
-export interface Summary {
-  id: number;
+export interface Summary extends BaseEntity {
   title: string;
   content: string;
-  content_en?: string;  // 英文内容
-  summary_type: string;
+  content_en?: string;
+  summary_type?: string;
   start_date?: string;
   end_date?: string;
   member_count: number;
   activity_count: number;
-  created_at: string;
   is_sent: boolean;
   sent_at?: string;
 }
 
-// 仪表板统计类型
+// 监控相关类型
+export interface MonitoringResult {
+  status: string;
+  new_activities: number;
+  platform_results?: Record<string, any>;
+}
+
 export interface DashboardStats {
   total_members: number;
   active_members: number;
@@ -101,18 +102,97 @@ export interface DashboardStats {
   latest_summary?: Summary;
 }
 
-// 监控配置类型
-export interface MonitoringConfig {
+// 设置相关类型
+export interface SystemSettings {
   monitoring_interval_minutes: number;
   summary_frequency_hours: number;
   platforms_to_monitor: string[];
 }
 
-// 监控结果类型
-export interface MonitoringResult {
-  status: string;
-  new_activities: number;
-  platform_results?: Record<string, Activity[]>;
+export interface ApiSettings {
+  openai_api_key?: string;
+  openai_model: string;
+  openai_base_url: string;
+  github_token?: string;
+}
+
+// 导出相关类型
+export interface ExportParams {
+  start_date?: string;
+  end_date?: string;
+  platform?: string;
+  member_id?: number;
+  summary_type?: string;
+  include_inactive?: boolean;
+}
+
+// 通知相关类型
+export interface Notification extends BaseEntity {
+  title: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  data?: Record<string, any>;
+  read: boolean;
+}
+
+export interface NotificationCreate {
+  title: string;
+  message: string;
+  type?: 'info' | 'success' | 'warning' | 'error';
+  data?: Record<string, any>;
+}
+
+// 健康检查相关类型
+export interface HealthStatus {
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  timestamp: string;
+  version: string;
+}
+
+export interface DatabaseHealth {
+  status: 'healthy' | 'unhealthy';
+  pool_stats?: {
+    pool_size: number;
+    checked_in: number;
+    checked_out: number;
+    overflow: number;
+    invalid?: number;
+  };
+  error?: string;
+}
+
+export interface DetailedHealth extends HealthStatus {
+  database: DatabaseHealth;
+  components: {
+    database: DatabaseHealth;
+    api: { status: string };
+    monitoring: { status: string };
+    ai_summarizer: { status: string };
+    notifications: { status: string };
+  };
+}
+
+// 搜索和过滤相关类型
+export interface FilterOption {
+  value: string;
+  label: string;
+}
+
+export interface SearchFilterConfig {
+  name: string;
+  label: string;
+  options: FilterOption[];
+}
+
+// 流式总结相关类型
+export interface StreamingProgress {
+  type: string;
+  progress?: number;
+  message?: string;
+  content?: string;
+  language?: string;
+  summary?: Summary;
+  error?: string;
 }
 
 // 表单错误类型

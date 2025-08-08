@@ -2,8 +2,7 @@
 
 from .member import Member, SocialProfile
 from .schemas import MemberCreate, MemberUpdate, SocialProfileCreate, SocialProfileUpdate
-from .user import User, GitHubOAuthConfig
-from .oauth_state import OAuthState
+from .user import User
 
 __all__ = [
     "Member",
@@ -12,7 +11,5 @@ __all__ = [
     "MemberUpdate",
     "SocialProfileCreate",
     "SocialProfileUpdate",
-    "User",
-    "GitHubOAuthConfig",
-    "OAuthState"
+    "User"
 ]

@@ -1,27 +1,25 @@
-"""Pydantic schemas for API requests and responses."""
+"""Pydantic schemas for data validation and serialization."""
 
+from typing import List, Optional
 from datetime import datetime
-from typing import Optional, List
-from pydantic import BaseModel, HttpUrl, EmailStr
+from pydantic import BaseModel, Field
 
 
 # Member schemas
 class MemberBase(BaseModel):
-    name: str
-    email: EmailStr
-    position: Optional[str] = None
-    department: Optional[str] = None
+    name: str = Field(..., min_length=1, max_length=100)
+    email: str = Field(..., pattern=r"^[^@]+@[^@]+\.[^@]+$")
+    position: Optional[str] = Field(None, max_length=100)
+    department: Optional[str] = Field(None, max_length=100)
 
 
 class MemberCreate(MemberBase):
     pass
 
 
-class MemberUpdate(BaseModel):
-    name: Optional[str] = None
-    email: Optional[EmailStr] = None
-    position: Optional[str] = None
-    department: Optional[str] = None
+class MemberUpdate(MemberBase):
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    email: Optional[str] = Field(None, pattern=r"^[^@]+@[^@]+\.[^@]+$")
     is_active: Optional[bool] = None
 
 
@@ -30,25 +28,25 @@ class Member(MemberBase):
     is_active: bool
     created_at: datetime
     updated_at: datetime
-    
+
     class Config:
         from_attributes = True
 
 
 # Social Profile schemas
 class SocialProfileBase(BaseModel):
-    platform: str
-    profile_url: HttpUrl
-    username: Optional[str] = None
+    platform: str = Field(..., min_length=1, max_length=50)
+    profile_url: str = Field(..., min_length=1, max_length=500)
+    username: Optional[str] = Field(None, max_length=100)
 
 
 class SocialProfileCreate(SocialProfileBase):
     pass
 
 
-class SocialProfileUpdate(BaseModel):
-    profile_url: Optional[HttpUrl] = None
-    username: Optional[str] = None
+class SocialProfileUpdate(SocialProfileBase):
+    platform: Optional[str] = Field(None, min_length=1, max_length=50)
+    profile_url: Optional[str] = Field(None, min_length=1, max_length=500)
     is_active: Optional[bool] = None
 
 
@@ -56,64 +54,48 @@ class SocialProfile(SocialProfileBase):
     id: int
     member_id: int
     is_active: bool
-    last_checked: Optional[datetime] = None
+    last_checked: Optional[datetime]
     created_at: datetime
     updated_at: datetime
-    
+
     class Config:
         from_attributes = True
 
 
 # Activity schemas
-class ActivityBase(BaseModel):
-    platform: str
-    activity_type: Optional[str] = None
-    title: Optional[str] = None
-    content: Optional[str] = None
-    url: Optional[HttpUrl] = None
-    external_id: Optional[str] = None
-    published_at: Optional[datetime] = None
-
-
-class ActivityCreate(ActivityBase):
-    member_id: int
-    social_profile_id: int
-
-
-class Activity(ActivityBase):
+class Activity(BaseModel):
     id: int
     member_id: int
     social_profile_id: int
-    is_processed: bool
+    platform: str
+    activity_type: str
+    title: Optional[str]
+    content: Optional[str]
+    url: Optional[str]
+    external_id: Optional[str]
+    published_at: Optional[datetime]
+    is_processed: bool = False
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
 
 # Summary schemas
-class SummaryBase(BaseModel):
+class Summary(BaseModel):
+    id: int
+    summary_type: str
     title: str
     content: str
-    content_en: Optional[str] = None  # 英文内容
-    summary_type: str
-    start_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
-
-
-class SummaryCreate(SummaryBase):
+    content_en: Optional[str]
+    start_date: Optional[datetime]
+    end_date: Optional[datetime]
     member_count: int = 0
     activity_count: int = 0
-
-
-class Summary(SummaryBase):
-    id: int
-    member_count: int
-    activity_count: int
     created_at: datetime
-    is_sent: bool
-    sent_at: Optional[datetime] = None
-    
+    is_sent: bool = False
+    sent_at: Optional[datetime]
+
     class Config:
         from_attributes = True
 
@@ -148,4 +130,21 @@ class DashboardStats(BaseModel):
 class MonitoringConfig(BaseModel):
     monitoring_interval_minutes: int
     summary_frequency_hours: int
-    platforms_to_monitor: List[str] 
+    platforms_to_monitor: List[str]
+
+
+# Settings schemas
+class SystemSettings(BaseModel):
+    monitoring_interval_minutes: int = Field(..., ge=1, le=1440)
+    summary_frequency_hours: int = Field(..., ge=1, le=168)
+    email_enabled: bool = False
+
+
+class ApiSettings(BaseModel):
+    openai_api_key: str = ""
+    github_token: str = ""
+
+
+class SettingsResponse(BaseModel):
+    system: SystemSettings
+    api: ApiSettings 
