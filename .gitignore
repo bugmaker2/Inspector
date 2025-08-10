@@ -17,3 +17,11 @@ frontend/node_modules/
 *.sqlite
 *.sqlite3
 inspector.db*
+
+# SQLite WAL and SHM files
+*.db-shm
+*.db-wal
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite3-shm
+*.sqlite3-wal

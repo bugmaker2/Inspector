@@ -163,6 +163,23 @@ export const apiService = {
     return response.data;
   },
 
+  async generateDailySummary(date?: string) {
+    const response = await api.post('/v1/monitoring/generate-daily-summary', { date });
+    return response.data;
+  },
+
+  async generateWeeklySummary(startDate?: string) {
+    const response = await api.post('/v1/monitoring/generate-weekly-summary', { start_date: startDate });
+    return response.data;
+  },
+
+  async generateDailySummaryStream(date?: string) {
+    const response = await api.post('/v1/monitoring/generate-daily-summary-stream', { date }, {
+      responseType: 'stream'
+    });
+    return response.data;
+  },
+
   // Notifications
   async getNotifications(params?: any) {
     const response = await api.get(apiEndpoints.notifications, { params });

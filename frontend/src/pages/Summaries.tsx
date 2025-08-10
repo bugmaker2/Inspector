@@ -31,8 +31,8 @@ const Summaries: React.FC = () => {
   const generateDailySummary = async () => {
     setGenerating(true);
     try {
-      // TODO: Implement generateDailySummary API
-      toast.success('每日总结生成任务已启动');
+      await apiService.generateDailySummary();
+      toast.success('每日总结生成成功');
       loadSummaries(); // 重新加载列表
     } catch (error: any) {
       toast.error(`生成每日总结失败: ${error.message || '未知错误'}`);
@@ -44,8 +44,8 @@ const Summaries: React.FC = () => {
   const generateWeeklySummary = async () => {
     setGenerating(true);
     try {
-      // TODO: Implement generateWeeklySummary API
-      toast.success('每周总结生成任务已启动');
+      await apiService.generateWeeklySummary();
+      toast.success('每周总结生成成功');
       loadSummaries(); // 重新加载列表
     } catch (error: any) {
       toast.error(`生成每周总结失败: ${error.message || '未知错误'}`);

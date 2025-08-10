@@ -65,8 +65,8 @@ const Dashboard: React.FC = () => {
 
   const handleGenerateSummary = async () => {
     try {
-      // Note: This endpoint might not exist in the current API
-      toast('总结生成功能暂未实现');
+      await apiService.generateDailySummary();
+      toast.success('日报生成成功');
       loadDashboardData();
     } catch (error) {
       console.error('Failed to generate summary:', error);
