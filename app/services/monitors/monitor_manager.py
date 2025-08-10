@@ -1,5 +1,6 @@
 """Monitor manager for coordinating all platform monitors."""
 
+import logging
 import asyncio
 from datetime import datetime, timedelta
 from typing import List, Dict, Any
@@ -8,6 +9,8 @@ from app.models.member import SocialProfile, Activity
 from app.services.monitors.linkedin_monitor import LinkedInMonitor
 from app.services.monitors.github_monitor import GitHubMonitor
 from app.core.config.settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 class MonitorManager:
@@ -48,7 +51,7 @@ class MonitorManager:
                         activities = await monitor.monitor_profile(profile)
                         platform_activities.extend(activities)
                     except Exception as e:
-                        print(f"Error monitoring profile {profile.id}: {e}")
+                        logger.error(f"Error monitoring profile {profile.id}: {e}")
                 
                 results[platform] = platform_activities
         
@@ -72,7 +75,7 @@ class MonitorManager:
         try:
             return await monitor.monitor_profile(profile)
         except Exception as e:
-            print(f"Error monitoring profile {profile_id}: {e}")
+            logger.error(f"Error monitoring profile {profile_id}: {e}")
             return []
     
     def get_monitoring_stats(self) -> Dict[str, Any]:
@@ -112,13 +115,13 @@ class MonitorManager:
     
     async def run_scheduled_monitoring(self) -> Dict[str, Any]:
         """Run scheduled monitoring for all profiles."""
-        print(f"Starting scheduled monitoring at {datetime.utcnow()}")
+        logger.info(f"Starting scheduled monitoring at {datetime.utcnow()}")
         
         # Get profiles that need updating
         profiles_to_update = self.get_profiles_needing_update()
         
         if not profiles_to_update:
-            print("No profiles need updating")
+            logger.info("No profiles need updating")
             return {"status": "no_updates_needed"}
         
         # Monitor all profiles
@@ -127,7 +130,7 @@ class MonitorManager:
         # Count total new activities
         total_new_activities = sum(len(activities) for activities in results.values())
         
-        print(f"Monitoring completed. Found {total_new_activities} new activities")
+        logger.info(f"Monitoring completed. Found {total_new_activities} new activities")
         
         return {
             "status": "completed",

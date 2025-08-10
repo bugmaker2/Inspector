@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { 
   ChartBarIcon, 
   UsersIcon, 
@@ -9,7 +7,7 @@ import {
   ArrowDownTrayIcon,
   BellIcon
 } from '@heroicons/react/24/outline';
-import { monitoringApi, exportApi, notificationsApi, downloadFile } from '../services/api';
+import { apiService, downloadFile } from '../services/api';
 import { DashboardStats, Summary, Notification } from '../types';
 import toast from 'react-hot-toast';
 
@@ -19,7 +17,7 @@ const Dashboard: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
-  const [summaryExpanded, setSummaryExpanded] = useState(false);
+
 
   useEffect(() => {
     loadDashboardData();
@@ -29,13 +27,13 @@ const Dashboard: React.FC = () => {
   const loadDashboardData = async () => {
     try {
       const [statsResponse, summariesResponse] = await Promise.all([
-        monitoringApi.getStats(),
-        monitoringApi.getSummaries()
+        apiService.getMonitoringStats(),
+        apiService.getSummaries()
       ]);
       
-      setStats(statsResponse.data);
-      if (summariesResponse.data.length > 0) {
-        setLatestSummary(summariesResponse.data[0]);
+      setStats(statsResponse);
+      if (summariesResponse.length > 0) {
+        setLatestSummary(summariesResponse[0]);
       }
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
@@ -47,8 +45,8 @@ const Dashboard: React.FC = () => {
 
   const loadNotifications = async () => {
     try {
-      const response = await notificationsApi.getAll(5, true);
-      setNotifications(response.data);
+      const response = await apiService.getNotifications({ limit: 5, unread_only: true });
+      setNotifications(response);
     } catch (error) {
       console.error('Failed to load notifications:', error);
     }
@@ -56,7 +54,7 @@ const Dashboard: React.FC = () => {
 
   const handleRunMonitoring = async () => {
     try {
-      await monitoringApi.runMonitoring();
+      await apiService.startMonitoring();
       toast.success('监控任务已启动');
       loadDashboardData();
     } catch (error) {
@@ -67,8 +65,8 @@ const Dashboard: React.FC = () => {
 
   const handleGenerateSummary = async () => {
     try {
-      await monitoringApi.generateDailySummary();
-      toast.success('总结生成任务已启动');
+      // Note: This endpoint might not exist in the current API
+      toast('总结生成功能暂未实现');
       loadDashboardData();
     } catch (error) {
       console.error('Failed to generate summary:', error);
@@ -84,30 +82,30 @@ const Dashboard: React.FC = () => {
       
       switch (type) {
         case 'activities-csv':
-          response = await exportApi.exportActivitiesCsv();
+          response = await apiService.exportData('csv', { type: 'activities' });
           filename = `activities_${new Date().toISOString().split('T')[0]}.csv`;
           break;
         case 'activities-excel':
-          response = await exportApi.exportActivitiesExcel();
+          response = await apiService.exportData('excel', { type: 'activities' });
           filename = `activities_${new Date().toISOString().split('T')[0]}.xlsx`;
           break;
         case 'summaries-pdf':
-          response = await exportApi.exportSummariesPdf();
+          response = await apiService.exportData('pdf', { type: 'summaries' });
           filename = `summaries_${new Date().toISOString().split('T')[0]}.pdf`;
           break;
         case 'members-json':
-          response = await exportApi.exportMembersJson();
-          filename = `members_${new Date().toISOString().split('T')[0]}.json`;
+          response = await apiService.exportData('csv', { type: 'members' });
+          filename = `members_${new Date().toISOString().split('T')[0]}.csv`;
           break;
         case 'dashboard-stats':
-          response = await exportApi.exportDashboardStats();
-          filename = `dashboard_stats_${new Date().toISOString().split('T')[0]}.json`;
+          response = await apiService.exportData('csv', { type: 'stats' });
+          filename = `dashboard_stats_${new Date().toISOString().split('T')[0]}.csv`;
           break;
         default:
           throw new Error('Unknown export type');
       }
       
-      downloadFile(response.data, filename);
+      downloadFile(response, filename);
       toast.success('导出成功');
     } catch (error) {
       console.error('Export failed:', error);
@@ -119,7 +117,7 @@ const Dashboard: React.FC = () => {
 
   const markNotificationAsRead = async (id: number) => {
     try {
-      await notificationsApi.markAsRead(id);
+      await apiService.markNotificationRead(id.toString());
       loadNotifications();
     } catch (error) {
       console.error('Failed to mark notification as read:', error);

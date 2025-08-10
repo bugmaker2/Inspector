@@ -20,12 +20,12 @@ const Activities: React.FC = () => {
     try {
       const [activitiesResponse, membersResponse] = await Promise.all([
         monitoringApi.getActivities(),
-        membersApi.getAll()
+        membersApi.getMembers()
       ]);
       
-      setActivities(activitiesResponse.data);
-      setFilteredActivities(activitiesResponse.data);
-      setMembers(membersResponse.data);
+      setActivities(activitiesResponse);
+      setFilteredActivities(activitiesResponse);
+      setMembers(membersResponse);
     } catch (error) {
       console.error('Failed to load activities:', error);
       toast.error('加载活动数据失败');
@@ -75,18 +75,18 @@ const Activities: React.FC = () => {
       
       switch (type) {
         case 'csv':
-          response = await exportApi.exportActivitiesCsv();
+          response = await exportApi.exportData('csv');
           filename = `activities_${new Date().toISOString().split('T')[0]}.csv`;
           break;
         case 'excel':
-          response = await exportApi.exportActivitiesExcel();
+          response = await exportApi.exportData('excel');
           filename = `activities_${new Date().toISOString().split('T')[0]}.xlsx`;
           break;
         default:
           throw new Error('Unknown export type');
       }
       
-      downloadFile(response.data, filename);
+      downloadFile(response, filename);
       toast.success('导出成功');
     } catch (error) {
       console.error('Export failed:', error);

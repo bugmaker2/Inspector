@@ -1,5 +1,6 @@
 """Main FastAPI application."""
 
+import logging
 import asyncio
 import schedule
 import time
@@ -11,10 +12,12 @@ from sqlalchemy.orm import Session
 
 from app.core.config.settings import settings
 from app.core.database.database import engine, Base, init_db, health_check as db_health_check
-from app.api.v1 import members, monitoring, settings as settings_api, export, notifications
+from app.api.v1 import members, monitoring, settings as settings_api, export, notifications, summaries
 from app.services.monitors.monitor_manager import MonitorManager
 from app.services.summarizers.llm_summarizer import LLMSummarizer
 from app.core.database.database import SessionLocal
+
+logger = logging.getLogger(__name__)
 
 
 # Initialize database tables
@@ -25,7 +28,7 @@ init_db()
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
     # Startup
-    print("Starting Inspector application...")
+    logger.info("Starting Inspector application...")
     
     # Start background tasks
     background_tasks = BackgroundTasks()
@@ -34,7 +37,7 @@ async def lifespan(app: FastAPI):
     yield
     
     # Shutdown
-    print("Shutting down Inspector application...")
+    logger.info("Shutting down Inspector application...")
 
 
 # Create FastAPI app
@@ -83,6 +86,12 @@ app.include_router(
     notifications.router,
     prefix=f"{settings.api_prefix}/notifications",
     tags=["notifications"]
+)
+
+app.include_router(
+    summaries.router,
+    prefix=f"{settings.api_prefix}/summaries",
+    tags=["summaries"]
 )
 
 
@@ -138,9 +147,9 @@ async def run_monitoring_task():
     try:
         monitor_manager = MonitorManager(db)
         results = await monitor_manager.monitor_all_profiles()
-        print(f"Monitoring completed: {len(results)} platforms checked")
+        logger.info(f"Monitoring completed: {len(results)} platforms checked")
     except Exception as e:
-        print(f"Monitoring task failed: {e}")
+        logger.error(f"Monitoring task failed: {e}")
         # Send notification about monitoring error
         await notifications.notify_monitoring_error("general", str(e))
     finally:
@@ -154,13 +163,13 @@ async def run_summary_task():
         summarizer = LLMSummarizer(db)
         summary = await summarizer.generate_daily_summary()
         if summary:
-            print(f"Daily summary generated: {summary.id}")
+            logger.info(f"Daily summary generated: {summary.id}")
             # Send notification about summary generation
             await notifications.notify_summary_generated(summary)
         else:
-            print("Daily summary generation failed")
+            logger.warning("Daily summary generation failed")
     except Exception as e:
-        print(f"Summary task failed: {e}")
+        logger.error(f"Summary task failed: {e}")
     finally:
         db.close()
 
@@ -200,13 +209,13 @@ async def run_weekly_summary_task():
         summarizer = LLMSummarizer(db)
         summary = await summarizer.generate_weekly_summary()
         if summary:
-            print(f"Weekly summary generated: {summary.id}")
+            logger.info(f"Weekly summary generated: {summary.id}")
             # Send notification about summary generation
             await notifications.notify_summary_generated(summary)
         else:
-            print("Weekly summary generation failed")
+            logger.warning("Weekly summary generation failed")
     except Exception as e:
-        print(f"Weekly summary task failed: {e}")
+        logger.error(f"Weekly summary task failed: {e}")
     finally:
         db.close()
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PlusIcon, TrashIcon, EyeIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { membersApi } from '../services/api';
 import { Member, MemberCreate, SocialProfileCreate, SocialProfile } from '../types';
 import toast from 'react-hot-toast';
@@ -30,8 +30,8 @@ const Members: React.FC = () => {
 
   const loadMembers = async () => {
     try {
-      const response = await membersApi.getAll();
-      setMembers(response.data);
+      const response = await membersApi.getMembers();
+      setMembers(response);
     } catch (error) {
       toast.error('加载成员列表失败');
       console.error('Failed to load members:', error);
@@ -42,8 +42,8 @@ const Members: React.FC = () => {
 
   const loadMemberProfiles = async (memberId: number) => {
     try {
-      const response = await membersApi.getSocialProfiles(memberId);
-      setMemberProfiles(response.data);
+      const response = await membersApi.getMemberSocialProfiles(memberId);
+      setMemberProfiles(response);
     } catch (error) {
       toast.error('加载社交配置失败');
       console.error('Failed to load member profiles:', error);
@@ -59,7 +59,7 @@ const Members: React.FC = () => {
   const handleCreateMember = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await membersApi.create(formData);
+      await membersApi.createMember(formData);
       toast.success('成员创建成功');
       setShowCreateModal(false);
       setFormData({ name: '', email: '', position: '', department: '' });
@@ -75,7 +75,7 @@ const Members: React.FC = () => {
     if (!selectedMember) return;
     
     try {
-      await membersApi.addSocialProfile(selectedMember.id, profileFormData);
+      await membersApi.createSocialProfile(selectedMember.id, profileFormData);
       toast.success('社交配置添加成功');
       setShowProfileModal(false);
       setProfileFormData({ platform: '', profile_url: '', username: '' });
@@ -94,7 +94,7 @@ const Members: React.FC = () => {
     if (!window.confirm('确定要删除这个成员吗？')) return;
     
     try {
-      await membersApi.delete(id);
+      await membersApi.deleteMember(id);
       toast.success('成员删除成功');
       loadMembers();
     } catch (error) {

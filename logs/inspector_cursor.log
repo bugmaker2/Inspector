@@ -52,3 +52,236 @@
 2025-08-08 13:32:36,115 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
 2025-08-08 13:32:36,115 - __main__ - INFO - API will be available at http://0.0.0.0:8000
 2025-08-08 13:32:36,115 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-09 17:31:34,515 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-09 17:31:34,515 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-09 17:31:34,515 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-09 17:32:46,604 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-09 17:32:46,604 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-09 17:32:46,604 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 14:13:05,342 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 14:13:05,343 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 14:13:05,343 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 14:13:05,357 - app.main - INFO - Starting Inspector application...
+2025-08-10 14:13:54,176 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 14:15:29,416 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 14:15:29,416 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 14:15:29,416 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 14:15:29,429 - app.main - INFO - Starting Inspector application...
+2025-08-10 14:15:40,243 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 14:16:34,886 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 14:16:34,886 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 14:16:34,886 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 14:16:34,896 - app.main - INFO - Starting Inspector application...
+2025-08-10 14:23:31,903 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 14:23:59,130 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 14:23:59,130 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 14:23:59,130 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 14:23:59,144 - app.main - INFO - Starting Inspector application...
+2025-08-10 14:25:43,716 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 14:25:43,716 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 14:25:43,716 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 14:25:43,730 - app.main - INFO - Starting Inspector application...
+2025-08-10 14:25:43,730 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 14:26:05,215 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 14:26:08,666 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 14:26:08,666 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 14:26:08,666 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 14:26:08,676 - app.main - INFO - Starting Inspector application...
+2025-08-10 14:26:20,603 - app.services.monitors.monitor_manager - INFO - Starting scheduled monitoring at 2025-08-10 06:26:20.603895
+2025-08-10 14:26:22,725 - httpx - INFO - HTTP Request: GET https://api.github.com/users/bugmaker2/events "HTTP/1.1 401 Unauthorized"
+2025-08-10 14:26:22,737 - app.services.monitors.monitor_manager - INFO - Monitoring completed. Found 0 new activities
+2025-08-10 14:26:31,695 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 14:28:42,193 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 14:28:42,193 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 14:28:42,193 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 14:28:42,202 - app.main - INFO - Starting Inspector application...
+2025-08-10 14:28:51,861 - app.services.monitors.monitor_manager - INFO - Starting scheduled monitoring at 2025-08-10 06:28:51.861226
+2025-08-10 14:28:52,937 - httpx - INFO - HTTP Request: GET https://api.github.com/users/bugmaker2/events "HTTP/1.1 401 Unauthorized"
+2025-08-10 14:28:52,945 - app.services.monitors.monitor_manager - INFO - Monitoring completed. Found 0 new activities
+2025-08-10 14:30:54,381 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 14:30:54,382 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 14:30:54,382 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 14:30:54,395 - app.main - INFO - Starting Inspector application...
+2025-08-10 14:30:54,395 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 14:31:03,883 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 14:31:23,742 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 14:31:23,742 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 14:31:23,742 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 14:31:23,752 - app.main - INFO - Starting Inspector application...
+2025-08-10 14:31:36,676 - app.services.monitors.monitor_manager - INFO - Starting scheduled monitoring at 2025-08-10 06:31:36.676887
+2025-08-10 14:31:37,680 - httpx - INFO - HTTP Request: GET https://api.github.com/users/bugmaker2/events "HTTP/1.1 401 Unauthorized"
+2025-08-10 14:31:37,688 - app.services.monitors.monitor_manager - INFO - Monitoring completed. Found 0 new activities
+2025-08-10 14:34:10,254 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 14:34:21,193 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 14:34:21,193 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 14:34:21,193 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 14:34:21,207 - app.main - INFO - Starting Inspector application...
+2025-08-10 14:37:37,917 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 14:37:53,090 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 14:37:53,090 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 14:37:53,090 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 14:37:53,103 - app.main - INFO - Starting Inspector application...
+2025-08-10 14:38:11,520 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 14:38:15,142 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 14:38:15,142 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 14:38:15,142 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 14:38:15,152 - app.main - INFO - Starting Inspector application...
+2025-08-10 14:38:25,172 - app.services.monitors.monitor_manager - INFO - Starting scheduled monitoring at 2025-08-10 06:38:25.172621
+2025-08-10 14:38:25,176 - app.services.monitors.monitor_manager - INFO - No profiles need updating
+2025-08-10 14:39:33,886 - app.services.monitors.monitor_manager - INFO - Starting scheduled monitoring at 2025-08-10 06:39:33.886444
+2025-08-10 14:39:33,888 - app.services.monitors.monitor_manager - INFO - No profiles need updating
+2025-08-10 14:42:14,086 - app.services.monitors.monitor_manager - INFO - Starting scheduled monitoring at 2025-08-10 06:42:14.086161
+2025-08-10 14:42:15,227 - httpx - INFO - HTTP Request: GET https://api.github.com/users/bugmaker2/events "HTTP/1.1 401 Unauthorized"
+2025-08-10 14:42:15,235 - app.services.monitors.monitor_manager - INFO - Monitoring completed. Found 0 new activities
+2025-08-10 14:42:49,283 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 14:45:03,110 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 14:45:03,110 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 14:45:03,110 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 14:45:03,124 - app.main - INFO - Starting Inspector application...
+2025-08-10 14:45:16,479 - app.services.monitors.monitor_manager - INFO - Starting scheduled monitoring at 2025-08-10 06:45:16.479901
+2025-08-10 14:45:17,524 - httpx - INFO - HTTP Request: GET https://api.github.com/users/bugmaker2/events "HTTP/1.1 401 Unauthorized"
+2025-08-10 14:45:17,534 - app.services.monitors.monitor_manager - INFO - Monitoring completed. Found 0 new activities
+2025-08-10 14:46:54,716 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 14:46:54,716 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 14:46:54,716 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 14:46:54,730 - app.main - INFO - Starting Inspector application...
+2025-08-10 14:46:54,730 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 14:47:10,099 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 14:47:30,736 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 14:47:30,737 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 14:47:30,737 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 14:47:30,746 - app.main - INFO - Starting Inspector application...
+2025-08-10 14:48:04,945 - app.services.monitors.monitor_manager - INFO - Starting scheduled monitoring at 2025-08-10 06:48:04.945501
+2025-08-10 14:48:05,903 - httpx - INFO - HTTP Request: GET https://api.github.com/users/bugmaker2/events "HTTP/1.1 401 Unauthorized"
+2025-08-10 14:48:05,910 - app.services.monitors.monitor_manager - INFO - Monitoring completed. Found 0 new activities
+2025-08-10 14:48:48,312 - app.services.monitors.monitor_manager - INFO - Starting scheduled monitoring at 2025-08-10 06:48:48.312165
+2025-08-10 14:48:49,212 - httpx - INFO - HTTP Request: GET https://api.github.com/users/bugmaker2/events "HTTP/1.1 401 Unauthorized"
+2025-08-10 14:48:49,218 - app.services.monitors.monitor_manager - INFO - Monitoring completed. Found 0 new activities
+2025-08-10 14:49:20,120 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 14:49:20,120 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 14:49:20,120 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 14:49:20,134 - app.main - INFO - Starting Inspector application...
+2025-08-10 14:49:32,992 - app.services.monitors.monitor_manager - INFO - Starting scheduled monitoring at 2025-08-10 06:49:32.992656
+2025-08-10 14:49:33,988 - httpx - INFO - HTTP Request: GET https://api.github.com/users/bugmaker2/events "HTTP/1.1 401 Unauthorized"
+2025-08-10 14:49:33,991 - app.services.monitors.monitor_manager - INFO - Monitoring completed. Found 0 new activities
+2025-08-10 14:51:35,903 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 14:51:37,945 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 14:51:37,945 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 14:51:37,945 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 14:51:37,960 - app.main - INFO - Starting Inspector application...
+2025-08-10 14:51:38,668 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 14:51:44,825 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 14:51:44,825 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 14:51:44,825 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 14:51:44,834 - app.main - INFO - Starting Inspector application...
+2025-08-10 14:51:57,776 - app.services.monitors.monitor_manager - INFO - Starting scheduled monitoring at 2025-08-10 06:51:57.776179
+2025-08-10 14:51:59,099 - httpx - INFO - HTTP Request: GET https://api.github.com/users/bugmaker2/events "HTTP/1.1 200 OK"
+2025-08-10 14:51:59,169 - app.services.monitors.monitor_manager - INFO - Monitoring completed. Found 20 new activities
+2025-08-10 14:52:32,927 - app.services.monitors.monitor_manager - INFO - Starting scheduled monitoring at 2025-08-10 06:52:32.927203
+2025-08-10 14:52:33,969 - httpx - INFO - HTTP Request: GET https://api.github.com/users/bugmaker2/events "HTTP/1.1 200 OK"
+2025-08-10 14:52:34,033 - app.services.monitors.monitor_manager - INFO - Monitoring completed. Found 0 new activities
+2025-08-10 14:52:38,441 - app.services.monitors.monitor_manager - INFO - Starting scheduled monitoring at 2025-08-10 06:52:38.441789
+2025-08-10 14:52:39,441 - httpx - INFO - HTTP Request: GET https://api.github.com/users/bugmaker2/events "HTTP/1.1 200 OK"
+2025-08-10 14:52:39,494 - app.services.monitors.monitor_manager - INFO - Monitoring completed. Found 0 new activities
+2025-08-10 14:59:23,572 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 14:59:23,572 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 14:59:23,572 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 14:59:23,587 - app.main - INFO - Starting Inspector application...
+2025-08-10 14:59:23,588 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 14:59:29,505 - app.services.monitors.monitor_manager - INFO - Starting scheduled monitoring at 2025-08-10 06:59:29.505298
+2025-08-10 14:59:30,808 - httpx - INFO - HTTP Request: GET https://api.github.com/users/bugmaker2/events "HTTP/1.1 200 OK"
+2025-08-10 14:59:30,857 - app.services.monitors.monitor_manager - INFO - Monitoring completed. Found 0 new activities
+2025-08-10 14:59:38,759 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 14:59:41,117 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 14:59:41,117 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 14:59:41,117 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 14:59:41,127 - app.main - INFO - Starting Inspector application...
+2025-08-10 14:59:47,181 - app.services.monitors.monitor_manager - INFO - Starting scheduled monitoring at 2025-08-10 06:59:47.181566
+2025-08-10 14:59:48,417 - httpx - INFO - HTTP Request: GET https://api.github.com/users/bugmaker2/events "HTTP/1.1 200 OK"
+2025-08-10 14:59:48,457 - app.services.monitors.github_monitor - INFO - Processing GitHub events from 2025-08-09 06:59:48.457638 to now
+2025-08-10 14:59:48,457 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,457 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,457 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,457 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - ERROR - Error parsing GitHub event: can't compare offset-naive and offset-aware datetimes
+2025-08-10 14:59:48,458 - app.services.monitors.github_monitor - INFO - Processed 0 events, filtered 0 activities within 24h time range
+2025-08-10 14:59:48,463 - app.services.monitors.monitor_manager - INFO - Monitoring completed. Found 0 new activities
+2025-08-10 14:59:59,634 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 15:00:02,043 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 15:00:02,043 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 15:00:02,043 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 15:00:02,057 - app.main - INFO - Starting Inspector application...
+2025-08-10 15:00:08,769 - app.services.monitors.monitor_manager - INFO - Starting scheduled monitoring at 2025-08-10 07:00:08.769647
+2025-08-10 15:00:10,051 - httpx - INFO - HTTP Request: GET https://api.github.com/users/bugmaker2/events "HTTP/1.1 200 OK"
+2025-08-10 15:00:10,067 - app.services.monitors.github_monitor - INFO - Processing GitHub events from 2025-08-09 07:00:10.067664 to now
+2025-08-10 15:00:10,068 - app.services.monitors.github_monitor - INFO - Reached event outside time range (2025-08-09 04:26:32), stopping processing
+2025-08-10 15:00:10,068 - app.services.monitors.github_monitor - INFO - Processed 0 events, filtered 0 activities within 24h time range
+2025-08-10 15:00:10,075 - app.services.monitors.monitor_manager - INFO - Monitoring completed. Found 0 new activities
+2025-08-10 15:06:18,824 - app.services.monitors.monitor_manager - INFO - Starting scheduled monitoring at 2025-08-10 07:06:18.824228
+2025-08-10 15:06:19,930 - httpx - INFO - HTTP Request: GET https://api.github.com/users/bugmaker2/events "HTTP/1.1 200 OK"
+2025-08-10 15:06:19,960 - app.services.monitors.github_monitor - INFO - Processing GitHub events from 2025-08-09 07:06:19.960765 to now
+2025-08-10 15:06:19,961 - app.services.monitors.github_monitor - INFO - Reached event outside time range (2025-08-09 04:26:32), stopping processing
+2025-08-10 15:06:19,961 - app.services.monitors.github_monitor - INFO - Processed 0 events, filtered 0 activities within 24h time range
+2025-08-10 15:06:19,966 - app.services.monitors.monitor_manager - INFO - Monitoring completed. Found 0 new activities
+2025-08-10 15:06:49,721 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 15:06:55,211 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 15:06:55,211 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 15:06:55,211 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 15:06:55,226 - app.main - INFO - Starting Inspector application...
+2025-08-10 15:07:16,460 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 15:07:16,460 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 15:07:16,460 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 15:07:16,474 - app.main - INFO - Starting Inspector application...
+2025-08-10 15:08:59,426 - app.services.monitors.monitor_manager - INFO - Starting scheduled monitoring at 2025-08-10 07:08:59.426315
+2025-08-10 15:09:00,595 - httpx - INFO - HTTP Request: GET https://api.github.com/users/bugmaker2/events "HTTP/1.1 200 OK"
+2025-08-10 15:09:00,597 - app.services.monitors.github_monitor - INFO - Processing GitHub events from 2025-08-09 07:09:00.597762 to now
+2025-08-10 15:09:00,598 - app.services.monitors.github_monitor - INFO - Reached event outside time range (2025-08-09 04:26:32), stopping processing
+2025-08-10 15:09:00,598 - app.services.monitors.github_monitor - INFO - Processed 0 events, filtered 0 activities within 24h time range
+2025-08-10 15:09:00,603 - app.services.monitors.monitor_manager - INFO - Monitoring completed. Found 0 new activities
+2025-08-10 15:09:10,948 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 15:09:13,948 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 15:09:13,948 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 15:09:13,948 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 15:09:13,962 - app.main - INFO - Starting Inspector application...
+2025-08-10 15:09:20,188 - app.services.monitors.monitor_manager - INFO - Starting scheduled monitoring at 2025-08-10 07:09:20.188737
+2025-08-10 15:09:21,803 - httpx - INFO - HTTP Request: GET https://api.github.com/users/bugmaker2/events "HTTP/1.1 200 OK"
+2025-08-10 15:09:21,846 - app.services.monitors.github_monitor - INFO - Processing GitHub events from 2025-08-03 07:09:21.846017 to now
+2025-08-10 15:09:21,846 - app.services.monitors.github_monitor - INFO - Reached event outside time range (2025-07-31 15:00:33), stopping processing
+2025-08-10 15:09:21,846 - app.services.monitors.github_monitor - INFO - Processed 10 events, filtered 10 activities within 168h time range
+2025-08-10 15:09:21,859 - app.services.monitors.monitor_manager - INFO - Monitoring completed. Found 10 new activities
+2025-08-10 15:09:56,992 - app.main - INFO - Shutting down Inspector application...
+2025-08-10 15:10:43,047 - __main__ - INFO - Starting Inspector - Social Media Activity Monitor
+2025-08-10 15:10:43,047 - __main__ - INFO - API will be available at http://0.0.0.0:8000
+2025-08-10 15:10:43,047 - __main__ - INFO - API documentation at http://0.0.0.0:8000/docs
+2025-08-10 15:10:43,060 - app.main - INFO - Starting Inspector application...
+2025-08-10 15:11:54,265 - app.services.monitors.monitor_manager - INFO - Starting scheduled monitoring at 2025-08-10 07:11:54.265361
+2025-08-10 15:11:55,382 - httpx - INFO - HTTP Request: GET https://api.github.com/users/bugmaker2/events "HTTP/1.1 200 OK"
+2025-08-10 15:11:55,386 - app.services.monitors.github_monitor - INFO - Processing GitHub events from 2025-08-03 07:11:55.386196 to now
+2025-08-10 15:11:55,386 - app.services.monitors.github_monitor - INFO - Reached event outside time range (2025-07-31 15:00:33), stopping processing
+2025-08-10 15:11:55,386 - app.services.monitors.github_monitor - INFO - Processed 10 events, filtered 10 activities within 168h time range
+2025-08-10 15:11:55,397 - app.services.monitors.monitor_manager - INFO - Monitoring completed. Found 0 new activities

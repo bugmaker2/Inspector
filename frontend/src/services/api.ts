@@ -1,16 +1,4 @@
 import axios from 'axios';
-import {
-  Member,
-  MemberCreate,
-  MemberUpdate,
-  SocialProfile,
-  SocialProfileCreate,
-  SocialProfileUpdate,
-  Activity,
-  Summary,
-  DashboardStats,
-  MonitoringResult,
-} from '../types';
 
 // API base URL - automatically detect environment
 const getApiBaseUrl = () => {
@@ -65,23 +53,23 @@ export const apiEndpoints = {
   health: '/health',
   
   // Members
-  members: '/v1/members',
+  members: '/v1/members/',
   member: (id: string) => `/v1/members/${id}`,
   
   // Activities
-  activities: '/v1/activities',
-  activity: (id: string) => `/v1/activities/${id}`,
+  activities: '/v1/monitoring/activities',
+  activity: (id: string) => `/v1/monitoring/activities/${id}`,
   
   // Summaries
-  summaries: '/v1/summaries',
+  summaries: '/v1/summaries/',
   summary: (id: string) => `/v1/summaries/${id}`,
   
   // Notifications
-  notifications: '/v1/notifications',
+  notifications: '/v1/notifications/',
   notification: (id: string) => `/v1/notifications/${id}`,
   
   // Settings
-  settings: '/v1/settings',
+  settings: '/v1/settings/',
   
   // Export
   export: '/v1/export',
@@ -107,8 +95,8 @@ export const apiService = {
     return response.data;
   },
 
-  async getMember(id: string) {
-    const response = await api.get(apiEndpoints.member(id));
+  async getMember(id: string | number) {
+    const response = await api.get(apiEndpoints.member(id.toString()));
     return response.data;
   },
 
@@ -117,13 +105,34 @@ export const apiService = {
     return response.data;
   },
 
-  async updateMember(id: string, data: any) {
-    const response = await api.put(apiEndpoints.member(id), data);
+  async updateMember(id: string | number, data: any) {
+    const response = await api.put(apiEndpoints.member(id.toString()), data);
     return response.data;
   },
 
-  async deleteMember(id: string) {
-    const response = await api.delete(apiEndpoints.member(id));
+  async deleteMember(id: string | number) {
+    const response = await api.delete(apiEndpoints.member(id.toString()));
+    return response.data;
+  },
+
+  // Social Profiles
+  async getMemberSocialProfiles(memberId: string | number) {
+    const response = await api.get(`/v1/members/${memberId}/social-profiles`);
+    return response.data;
+  },
+
+  async createSocialProfile(memberId: string | number, data: any) {
+    const response = await api.post(`/v1/members/${memberId}/social-profiles`, data);
+    return response.data;
+  },
+
+  async updateSocialProfile(memberId: string | number, profileId: string | number, data: any) {
+    const response = await api.put(`/v1/members/${memberId}/social-profiles/${profileId}`, data);
+    return response.data;
+  },
+
+  async deleteSocialProfile(memberId: string | number, profileId: string | number) {
+    const response = await api.delete(`/v1/members/${memberId}/social-profiles/${profileId}`);
     return response.data;
   },
 
@@ -133,8 +142,8 @@ export const apiService = {
     return response.data;
   },
 
-  async getActivity(id: string) {
-    const response = await api.get(apiEndpoints.activity(id));
+  async getActivity(id: string | number) {
+    const response = await api.get(apiEndpoints.activity(id.toString()));
     return response.data;
   },
 
@@ -144,8 +153,8 @@ export const apiService = {
     return response.data;
   },
 
-  async getSummary(id: string) {
-    const response = await api.get(apiEndpoints.summary(id));
+  async getSummary(id: string | number) {
+    const response = await api.get(apiEndpoints.summary(id.toString()));
     return response.data;
   },
 
@@ -160,13 +169,13 @@ export const apiService = {
     return response.data;
   },
 
-  async getNotification(id: string) {
-    const response = await api.get(apiEndpoints.notification(id));
+  async getNotification(id: string | number) {
+    const response = await api.get(apiEndpoints.notification(id.toString()));
     return response.data;
   },
 
-  async markNotificationRead(id: string) {
-    const response = await api.put(apiEndpoints.notification(id), { read: true });
+  async markNotificationRead(id: string | number) {
+    const response = await api.put(apiEndpoints.notification(id.toString()), { read: true });
     return response.data;
   },
 
@@ -182,9 +191,43 @@ export const apiService = {
   },
 
   // Export
-  async exportData(format: 'csv' | 'excel' | 'pdf', params?: any) {
-    const response = await api.get(apiEndpoints.export, {
-      params: { format, ...params },
+  async exportData(format: 'csv' | 'excel' | 'pdf' | 'json', params?: any) {
+    const { type, ...otherParams } = params || {};
+    
+    // Use specific endpoints based on type and format
+    let endpoint = '';
+    if (type === 'members') {
+      if (format === 'json') {
+        endpoint = '/v1/export/members/json';
+      } else if (format === 'csv') {
+        endpoint = '/v1/export/members/csv';
+      }
+    } else if (type === 'activities') {
+      if (format === 'csv') {
+        endpoint = '/v1/export/activities/csv';
+      } else if (format === 'excel') {
+        endpoint = '/v1/export/activities/excel';
+      }
+    } else if (type === 'summaries') {
+      if (format === 'pdf') {
+        endpoint = '/v1/export/summaries/pdf';
+      } else if (format === 'json') {
+        endpoint = '/v1/export/summaries/json';
+      }
+    } else if (type === 'stats') {
+      if (format === 'json') {
+        endpoint = '/v1/export/dashboard/stats';
+      } else if (format === 'csv') {
+        endpoint = '/v1/export/stats/csv';
+      }
+    }
+    
+    if (!endpoint) {
+      throw new Error(`Unsupported export type: ${type} with format: ${format}`);
+    }
+    
+    const response = await api.get(endpoint, {
+      params: otherParams,
       responseType: 'blob',
     });
     return response.data;
@@ -193,6 +236,11 @@ export const apiService = {
   // Monitoring
   async getMonitoringStatus() {
     const response = await api.get(apiEndpoints.monitoringStatus);
+    return response.data;
+  },
+
+  async getMonitoringStats() {
+    const response = await api.get('/v1/monitoring/stats');
     return response.data;
   },
 
@@ -217,6 +265,43 @@ export const downloadFile = (blob: Blob, filename: string) => {
   link.click();
   document.body.removeChild(link);
   window.URL.revokeObjectURL(url);
+};
+
+// 导出各个 API 模块以兼容现有代码
+export const membersApi = {
+  getMembers: apiService.getMembers,
+  getMember: apiService.getMember,
+  createMember: apiService.createMember,
+  updateMember: apiService.updateMember,
+  deleteMember: apiService.deleteMember,
+  getMemberSocialProfiles: apiService.getMemberSocialProfiles,
+  createSocialProfile: apiService.createSocialProfile,
+  updateSocialProfile: apiService.updateSocialProfile,
+  deleteSocialProfile: apiService.deleteSocialProfile,
+};
+
+export const monitoringApi = {
+  getMonitoringStatus: apiService.getMonitoringStatus,
+  getMonitoringStats: apiService.getMonitoringStats,
+  startMonitoring: apiService.startMonitoring,
+  stopMonitoring: apiService.stopMonitoring,
+  getActivities: apiService.getActivities,
+  getActivity: apiService.getActivity,
+};
+
+export const exportApi = {
+  exportData: apiService.exportData,
+};
+
+export const notificationsApi = {
+  getNotifications: apiService.getNotifications,
+  getNotification: apiService.getNotification,
+  markNotificationRead: apiService.markNotificationRead,
+};
+
+export const settingsApi = {
+  getSettings: apiService.getSettings,
+  updateSettings: apiService.updateSettings,
 };
 
 export default api; 

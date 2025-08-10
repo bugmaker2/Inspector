@@ -1,5 +1,6 @@
 """LinkedIn platform monitor."""
 
+import logging
 import re
 from datetime import datetime
 from typing import List, Dict, Any
@@ -9,6 +10,8 @@ from bs4 import BeautifulSoup
 from app.services.monitors.base_monitor import BaseMonitor
 from app.models.member import SocialProfile
 from app.core.config.settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 class LinkedInMonitor(BaseMonitor):
@@ -50,7 +53,7 @@ class LinkedInMonitor(BaseMonitor):
                     activities = self._parse_linkedin_page(soup, profile)
                 
         except Exception as e:
-            print(f"Error fetching LinkedIn activities: {e}")
+            logger.error(f"Error fetching LinkedIn activities: {e}")
         
         return activities
     
@@ -96,7 +99,7 @@ class LinkedInMonitor(BaseMonitor):
                     })
                     
             except Exception as e:
-                print(f"Error parsing LinkedIn post: {e}")
+                logger.error(f"Error parsing LinkedIn post: {e}")
                 continue
         
         return activities

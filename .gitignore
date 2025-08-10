@@ -16,5 +16,4 @@ frontend/node_modules/
 *.db
 *.sqlite
 *.sqlite3
-inspector.db
-inspector_cursor.db
+inspector.db*

@@ -2,7 +2,7 @@
 
 import logging
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List, Dict, Any
 from urllib.parse import urlparse
 import httpx
@@ -52,8 +52,7 @@ class GitHubMonitor(BaseMonitor):
                 
                 if response.status_code == 200:
                     events = response.json()
-                    # Use time-based filtering instead of count-based
-                    activities = self._parse_github_events(events, username, time_range_hours=settings.monitoring_time_range_hours)
+                    activities = self._parse_github_events(events, username)
                 
         except Exception as e:
             logger.error(f"Error fetching GitHub activities: {e}")
@@ -71,27 +70,12 @@ class GitHubMonitor(BaseMonitor):
             pass
         return ""
     
-    def _parse_github_events(self, events: List[Dict], username: str, time_range_hours: int = 24) -> List[Dict[str, Any]]:
-        """Parse GitHub events into activities based on time range."""
+    def _parse_github_events(self, events: List[Dict], username: str) -> List[Dict[str, Any]]:
+        """Parse GitHub events into activities."""
         activities = []
         
-        # Calculate time range cutoff
-        cutoff_time = datetime.utcnow().replace(tzinfo=None) - timedelta(hours=time_range_hours)
-        logger.info(f"Processing GitHub events from {cutoff_time} to now")
-        
-        processed_count = 0
-        filtered_count = 0
-        
-        for event in events:  # Process all events within time range
+        for event in events[:20]:  # Limit to recent 20 events
             try:
-                # Check if event is within time range
-                event_time = datetime.fromisoformat(event.get("created_at", "").replace("Z", "+00:00")).replace(tzinfo=None)
-                if event_time < cutoff_time:
-                    # Stop processing if we reach events outside time range
-                    logger.info(f"Reached event outside time range ({event_time}), stopping processing")
-                    break
-                
-                processed_count += 1
                 event_type = event.get("type", "")
                 repo = event.get("repo", {})
                 repo_name = repo.get("name", "") if repo else ""
@@ -105,16 +89,14 @@ class GitHubMonitor(BaseMonitor):
                         "title": title,
                         "content": content,
                         "url": f"https://github.com/{repo_name}" if repo_name else "",
-                        "published_at": event_time,
+                        "published_at": datetime.fromisoformat(event.get("created_at", "").replace('Z', '+00:00')),
                         "external_id": f"github_{event.get('id')}"
                     })
-                    filtered_count += 1
                     
             except Exception as e:
                 logger.error(f"Error parsing GitHub event: {e}")
                 continue
         
-        logger.info(f"Processed {processed_count} events, filtered {filtered_count} activities within {time_range_hours}h time range")
         return activities
     
     def _parse_event_type(self, event: Dict, username: str) -> tuple:
@@ -182,4 +164,4 @@ class GitHubMonitor(BaseMonitor):
             "url": raw_activity.get("url"),
             "external_id": raw_activity.get("external_id"),
             "published_at": raw_activity.get("published_at")
-        }
+        } 

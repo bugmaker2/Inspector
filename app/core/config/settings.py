@@ -43,6 +43,10 @@ class Settings(BaseSettings):
     )
     
     # Monitoring
+    monitoring_time_range_hours: int = Field(
+        default=168, 
+        description="Time range for monitoring activities in hours (default: 168 = 1 week)"
+    )
     monitoring_interval_minutes: int = Field(
         default=60, description="Interval between monitoring checks in minutes"
     )
@@ -99,4 +103,4 @@ class Settings(BaseSettings):
 
 
 # Global settings instance
-settings = Settings() 
+settings = Settings()

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { monitoringApi } from '../services/api';
+import { apiService } from '../services/api';
 import { Summary } from '../types';
 import toast from 'react-hot-toast';
 import { DocumentTextIcon } from '@heroicons/react/24/outline';
@@ -12,14 +12,10 @@ const Summaries: React.FC = () => {
   const [generating, setGenerating] = useState(false);
   const [language, setLanguage] = useState<'chinese' | 'english'>('chinese');
 
-  useEffect(() => {
-    loadSummaries();
-  }, [language]);
-
   const loadSummaries = async () => {
     try {
-      const response = await monitoringApi.getSummaries(language);
-      setSummaries(response.data);
+      const response = await apiService.getSummaries();
+      setSummaries(response);
     } catch (error) {
       toast.error('加载总结列表失败');
       console.error('Failed to load summaries:', error);
@@ -28,10 +24,14 @@ const Summaries: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    loadSummaries();
+  }, [language]);
+
   const generateDailySummary = async () => {
     setGenerating(true);
     try {
-      await monitoringApi.generateDailySummary();
+      // TODO: Implement generateDailySummary API
       toast.success('每日总结生成任务已启动');
       loadSummaries(); // 重新加载列表
     } catch (error: any) {
@@ -44,7 +44,7 @@ const Summaries: React.FC = () => {
   const generateWeeklySummary = async () => {
     setGenerating(true);
     try {
-      await monitoringApi.generateWeeklySummary();
+      // TODO: Implement generateWeeklySummary API
       toast.success('每周总结生成任务已启动');
       loadSummaries(); // 重新加载列表
     } catch (error: any) {

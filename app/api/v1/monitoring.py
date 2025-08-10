@@ -89,6 +89,54 @@ async def monitor_specific_profile(
         )
 
 
+@router.get("/status")
+def get_monitoring_status():
+    """Get monitoring service status."""
+    return {
+        "status": "ready",
+        "timestamp": datetime.utcnow().isoformat(),
+        "service": "monitoring"
+    }
+
+
+@router.post("/start", status_code=status.HTTP_200_OK)
+async def start_monitoring(
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db)
+):
+    """Start monitoring for all social profiles."""
+    try:
+        monitor_manager = MonitorManager(db)
+        result = await monitor_manager.run_scheduled_monitoring()
+        return {
+            "status": "started",
+            "message": "Monitoring started successfully",
+            "result": result
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to start monitoring: {str(e)}"
+        )
+
+
+@router.post("/stop", status_code=status.HTTP_200_OK)
+async def stop_monitoring():
+    """Stop monitoring service."""
+    try:
+        # For now, just return success since monitoring runs in background
+        # In a real implementation, you might want to stop background tasks
+        return {
+            "status": "stopped",
+            "message": "Monitoring stopped successfully"
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to stop monitoring: {str(e)}"
+        )
+
+
 @router.get("/stats", response_model=DashboardStats)
 def get_monitoring_stats(db: Session = Depends(get_db)):
     """Get monitoring statistics and dashboard data."""

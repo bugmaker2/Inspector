@@ -22,8 +22,50 @@ from app.models.schemas import Activity as ActivitySchema, Summary as SummarySch
 router = APIRouter()
 
 
+@router.get("/")
+def export_data(
+    format: str = Query(..., description="Export format (csv, excel, pdf, json)"),
+    type: str = Query(..., description="Data type (activities, members, summaries, stats)"),
+    start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
+    platform: Optional[str] = Query(None, description="Platform filter"),
+    member_id: Optional[int] = Query(None, description="Member ID filter"),
+    summary_type: Optional[str] = Query(None, description="Summary type (daily/weekly)"),
+    include_inactive: bool = Query(False, description="Include inactive members"),
+    db: Session = Depends(get_db)
+):
+    """Unified export endpoint that handles all export types and formats."""
+    try:
+        if type == "members":
+            if format == "csv":
+                return export_members_csv(include_inactive, db)
+            elif format == "json":
+                return export_members_json(include_inactive, db)
+            else:
+                raise HTTPException(status_code=400, detail=f"Unsupported format '{format}' for members")
+        
+        elif type == "stats":
+            if format == "csv":
+                return export_stats_csv(db)
+            elif format == "json":
+                return export_dashboard_stats(db)
+            else:
+                raise HTTPException(status_code=400, detail=f"Unsupported format '{format}' for stats")
+        
+        else:
+            raise HTTPException(status_code=400, detail=f"Unsupported data type '{type}'")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
+
+
+
+
+
 @router.get("/activities/csv")
-async def export_activities_csv(
+def export_activities_csv(
     start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
     platform: Optional[str] = Query(None, description="Platform filter"),
@@ -92,7 +134,7 @@ async def export_activities_csv(
 
 
 @router.get("/activities/excel")
-async def export_activities_excel(
+def export_activities_excel(
     start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
     platform: Optional[str] = Query(None, description="Platform filter"),
@@ -159,7 +201,7 @@ async def export_activities_excel(
 
 
 @router.get("/summaries/pdf")
-async def export_summaries_pdf(
+def export_summaries_pdf(
     start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
     summary_type: Optional[str] = Query(None, description="Summary type (daily/weekly)"),
@@ -267,8 +309,19 @@ async def export_summaries_pdf(
         raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
 
 
+@router.get("/summaries/json")
+def export_summaries_json_endpoint(
+    start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
+    summary_type: Optional[str] = Query(None, description="Summary type (daily/weekly)"),
+    db: Session = Depends(get_db)
+):
+    """Export summaries to JSON format."""
+    return export_summaries_json(start_date, end_date, summary_type, db)
+
+
 @router.get("/members/json")
-async def export_members_json(
+def export_members_json(
     include_inactive: bool = Query(False, description="Include inactive members"),
     db: Session = Depends(get_db)
 ):
@@ -318,8 +371,17 @@ async def export_members_json(
         raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
 
 
+@router.get("/members/csv")
+def export_members_csv_endpoint(
+    include_inactive: bool = Query(False, description="Include inactive members"),
+    db: Session = Depends(get_db)
+):
+    """Export members to CSV format."""
+    return export_members_csv(include_inactive, db)
+
+
 @router.get("/dashboard/stats")
-async def export_dashboard_stats(
+def export_dashboard_stats(
     db: Session = Depends(get_db)
 ):
     """Export dashboard statistics."""
@@ -339,6 +401,157 @@ async def export_dashboard_stats(
         return StreamingResponse(
             io.BytesIO(json.dumps(stats, ensure_ascii=False, indent=2).encode('utf-8')),
             media_type="application/json",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
+
+
+@router.get("/stats/csv")
+def export_stats_csv_endpoint(
+    db: Session = Depends(get_db)
+):
+    """Export dashboard statistics to CSV format."""
+    return export_stats_csv(db)
+
+
+def export_members_csv(
+    include_inactive: bool = False,
+    db: Session = None
+):
+    """Export members to CSV format."""
+    try:
+        query = db.query(Member)
+        if not include_inactive:
+            query = query.filter(Member.is_active == True)
+        
+        members = query.all()
+        
+        # Create CSV content
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # Write header
+        writer.writerow([
+            "ID", "Name", "Email", "Position", "Is Active", 
+            "Created At", "Updated At", "Social Profiles"
+        ])
+        
+        # Write data
+        for member in members:
+            social_profiles = "; ".join([f"{p.platform}:{p.username}" for p in member.social_profiles])
+            writer.writerow([
+                member.id,
+                member.name,
+                member.email,
+                member.position,
+                member.is_active,
+                member.created_at.isoformat() if member.created_at else "",
+                member.updated_at.isoformat() if member.updated_at else "",
+                social_profiles
+            ])
+        
+        output.seek(0)
+        
+        # Generate filename
+        filename = f"members_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        
+        return StreamingResponse(
+            io.BytesIO(output.getvalue().encode('utf-8')),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
+
+
+def export_summaries_json(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    summary_type: Optional[str] = None,
+    db: Session = None
+):
+    """Export summaries to JSON format."""
+    try:
+        # Build query
+        query = db.query(Summary)
+        
+        # Apply filters
+        if start_date:
+            start_dt = datetime.strptime(start_date, "%Y-%m-%d")
+            query = query.filter(Summary.start_date >= start_dt)
+        
+        if end_date:
+            end_dt = datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=1)
+            query = query.filter(Summary.end_date < end_dt)
+        
+        if summary_type:
+            query = query.filter(Summary.summary_type == summary_type)
+        
+        summaries = query.order_by(Summary.created_at.desc()).all()
+        
+        # Prepare data
+        data = []
+        for summary in summaries:
+            summary_data = {
+                "id": summary.id,
+                "summary_type": summary.summary_type,
+                "content": summary.content,
+                "start_date": summary.start_date.isoformat() if summary.start_date else None,
+                "end_date": summary.end_date.isoformat() if summary.end_date else None,
+                "created_at": summary.created_at.isoformat() if summary.created_at else None,
+                "sent_at": summary.sent_at.isoformat() if summary.sent_at else None
+            }
+            data.append(summary_data)
+        
+        # Generate filename
+        filename = f"summaries_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        
+        return StreamingResponse(
+            io.BytesIO(json.dumps(data, ensure_ascii=False, indent=2).encode('utf-8')),
+            media_type="application/json",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
+
+
+def export_stats_csv(
+    db: Session = None
+):
+    """Export dashboard statistics to CSV format."""
+    try:
+        from app.api.v1.monitoring import get_monitoring_stats
+        
+        # Get stats
+        stats = get_monitoring_stats(db)
+        
+        # Create CSV content
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # Write header
+        writer.writerow(["Metric", "Value"])
+        
+        # Convert DashboardStats to dictionary
+        stats_dict = stats.dict() if hasattr(stats, 'dict') else stats
+        
+        # Write data
+        for key, value in stats_dict.items():
+            if key not in ["exported_at", "export_format"]:
+                writer.writerow([key, value])
+        
+        output.seek(0)
+        
+        # Generate filename
+        filename = f"dashboard_stats_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        
+        return StreamingResponse(
+            io.BytesIO(output.getvalue().encode('utf-8')),
+            media_type="text/csv",
             headers={"Content-Disposition": f"attachment; filename={filename}"}
         )
         

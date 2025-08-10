@@ -1,5 +1,6 @@
 """LLM-based activity summarization service."""
 
+import logging
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional, Callable, AsyncGenerator
 from sqlalchemy.orm import Session
@@ -10,6 +11,8 @@ import asyncio
 import json
 from app.models.member import Activity, Summary, Member
 from app.core.config.settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 class LLMSummarizer:
@@ -352,7 +355,7 @@ Make it professional, well-structured, and easy to read with clear sections and 
                         result = response.json()
                         return result["choices"][0]["message"]["content"]
                     else:
-                        print(f"Aliyun API error: {response.status_code} {response.text}")
+                        logger.error(f"Aliyun API error: {response.status_code} {response.text}")
                         return None
             else:
                 response = self.client.chat.completions.create(
@@ -367,7 +370,7 @@ Make it professional, well-structured, and easy to read with clear sections and 
                 return response.choices[0].message.content
             
         except Exception as e:
-            print(f"Error generating {language} LLM summary: {e}")
+            logger.error(f"Error generating {language} LLM summary: {e}")
             return None
 
     async def _generate_language_content_stream(
@@ -484,7 +487,7 @@ Make it professional, well-structured, and easy to read with clear sections and 
                                         continue
                             return content
                         else:
-                            print(f"Aliyun API error: {response.status_code}")
+                            logger.error(f"Aliyun API error: {response.status_code}")
                             return None
             else:
                 # OpenAI - 支持流式
@@ -511,7 +514,7 @@ Make it professional, well-structured, and easy to read with clear sections and 
                 return content
             
         except Exception as e:
-            print(f"Error generating {language} LLM summary: {e}")
+            logger.error(f"Error generating {language} LLM summary: {e}")
             return None
 
     async def _generate_language_content_stream_generator(
@@ -682,7 +685,7 @@ Make it professional, well-structured, and easy to read with clear sections and 
             return None
         
         # Debug: Print date range
-        print(f"Searching for activities between {start_date} and {end_date}")
+        logger.info(f"Searching for activities between {start_date} and {end_date}")
         
         # Get activities for this member in the date range
         # First get all activities for the member, then filter by date
@@ -696,7 +699,7 @@ Make it professional, well-structured, and easy to read with clear sections and 
             if activity.published_at and start_date <= activity.published_at <= end_date:
                 activities.append(activity)
         
-        print(f"Found {len(activities)} activities for member {member_id}")
+        logger.info(f"Found {len(activities)} activities for member {member_id}")
         
         if not activities:
             return None
@@ -888,7 +891,7 @@ Make it professional, well-structured, and easy to read with clear sections and 
                 return response.choices[0].message.content
             
         except Exception as e:
-            print(f"Error generating {language} LLM summary for member {member.id}: {e}")
+            logger.error(f"Error generating {language} LLM summary for member {member.id}: {e}")
             return None
 
     def _create_member_summary_prompt(

@@ -28,17 +28,14 @@ const Settings: React.FC = () => {
   const loadSettings = async () => {
     try {
       setLoading(true);
-      const [systemResponse, apiResponse] = await Promise.all([
-        settingsApi.getSystemSettings(),
-        settingsApi.getApiSettings()
-      ]);
+      const response = await settingsApi.getSettings();
       
       setSettings({
-        monitoring_interval_minutes: systemResponse.data.monitoring_interval_minutes,
-        summary_frequency_hours: systemResponse.data.summary_frequency_hours,
-        email_enabled: systemResponse.data.email_enabled,
-        openai_api_key: apiResponse.data.openai_api_key,
-        github_token: apiResponse.data.github_token
+        monitoring_interval_minutes: response.monitoring_interval_minutes || 60,
+        summary_frequency_hours: response.summary_frequency_hours || 24,
+        email_enabled: response.email_enabled || false,
+        openai_api_key: response.openai_api_key || '',
+        github_token: response.github_token || ''
       });
     } catch (error) {
       toast.error('加载设置失败');
@@ -51,7 +48,7 @@ const Settings: React.FC = () => {
   const handleSystemSettingsSave = async () => {
     try {
       setSaving(true);
-      await settingsApi.updateSystemSettings({
+      await settingsApi.updateSettings({
         monitoring_interval_minutes: settings.monitoring_interval_minutes,
         summary_frequency_hours: settings.summary_frequency_hours,
         email_enabled: settings.email_enabled
@@ -68,7 +65,7 @@ const Settings: React.FC = () => {
   const handleApiSettingsSave = async () => {
     try {
       setSaving(true);
-      await settingsApi.updateApiSettings({
+      await settingsApi.updateSettings({
         openai_api_key: settings.openai_api_key,
         github_token: settings.github_token
       });
